@@ -1,0 +1,101 @@
+# ===========================
+# macOS
+# ===========================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ===========================
+# IDE — IntelliJ IDEA
+# ===========================
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# ===========================
+# IDE — VS Code
+# ===========================
+.vscode/
+!.vscode/extensions.json
+
+# ===========================
+# Java / Gradle（後端）
+# ===========================
+build/
+.gradle/
+gradle-app.setting
+!gradle/wrapper/gradle-wrapper.jar
+.gradletasknamecache
+
+# Spring Boot
+*.jar
+*.war
+*.ear
+
+# 環境變數（機敏資訊，絕對不能 commit）
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Log
+*.log
+logs/
+
+# ===========================
+# Node.js / Vue（前端）
+# ===========================
+node_modules/
+dist/
+.cache/
+.parcel-cache/
+
+# Vite
+.vite/
+
+# 環境變數
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ===========================
+# Flutter / Dart（App）
+# ===========================
+# Build
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Android
+**/android/local.properties
+**/android/.gradle/
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/gradle/wrapper/gradle-wrapper.jar
+
+# iOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# ===========================
+# Docker
+# ===========================
+# 只忽略本機覆寫設定，保留主要 compose 檔
+docker-compose.override.yml
+
+# ===========================
+# 其他
+# ===========================
+*.tmp
+*.bak
+*.swp
+*.class
