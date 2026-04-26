@@ -3,6 +3,7 @@ package com.livebeat.auth.application.service;
 import com.livebeat.auth.application.dto.AuthResponse;
 import com.livebeat.auth.application.dto.LoginRequest;
 import com.livebeat.auth.application.dto.RegisterRequest;
+import com.livebeat.auth.application.dto.UpdateProfileRequest;
 import com.livebeat.auth.domain.model.RefreshToken;
 import com.livebeat.auth.domain.model.User;
 import com.livebeat.auth.domain.port.RefreshTokenRepository;
@@ -17,6 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+/**
+ * [auth] 認證業務邏輯服務
+ *
+ * 負責：使用者註冊、Email 登入驗證、Refresh Token 輪換、登出（撤銷 Token）、個人資料查詢與更新
+ * 依賴：UserRepository, RefreshTokenRepository, JwtService, PasswordEncoder
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -69,6 +76,22 @@ public class AuthService {
     public void logout(String tokenValue) {
         refreshTokenRepository.findByToken(tokenValue)
                 .ifPresent(token -> refreshTokenRepository.revokeAllByUserId(token.getUserId()));
+    }
+
+    @Transactional(readOnly = true)
+    public User getMe(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public User updateMe(UUID userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
+        if (!user.getUsername().equals(request.username())
+                && userRepository.existsByUsernameAndIdNot(request.username(), userId)) {
+            throw new ApiException(ErrorCode.USERNAME_ALREADY_EXISTS);
+        }
+        return userRepository.save(user.withUsername(request.username()));
     }
 
     private AuthResponse issueTokens(User user) {
