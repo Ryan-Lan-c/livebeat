@@ -4,6 +4,18 @@
 
 ---
 
+## 技術備註
+
+| 項目 | 規範 | 說明 |
+|---|---|---|
+| ID 型別 | UUID | 全專案統一使用 UUID（`gen_random_uuid()`）。JPA 層使用 `GenerationType.UUID`，由 Hibernate 在 Java 側產生 |
+| 時間戳 | `TIMESTAMPTZ` / `Instant` | 所有時間欄位一律使用 PostgreSQL `TIMESTAMPTZ`（含時區），Java 層對應 `Instant`（UTC），支援全球多時區 |
+| 搜尋索引 | PostgreSQL `pg_trgm` | 啟用 GIN index 加速中文關鍵字搜尋（藝人名、場館、標題）。若未來需要中文斷詞，可升級至 `zhparser` 文字搜尋設定 |
+| Audit 欄位 | Spring Data JPA Auditing | 共用三層 `@MappedSuperclass`：`CreatedEntity`（created_at）、`TimestampedEntity`（+ updated_at）、`AuditedEntity`（+ created_by、updated_by）。`created_by` / `updated_by` 存 UUID，系統操作填全零 UUID（`00000000-...`） |
+| DB 說明 | 雙語 Comment | 所有 table 與 column 均加 `COMMENT ON`，格式為 `English \| 繁體中文` |
+
+---
+
 ## ERD 圖
 
 ```mermaid
@@ -11,14 +23,15 @@ erDiagram
     USER {
         uuid id PK
         string email UK
-        string password_hash
-        string full_name
-        string phone
-        string role "USER / STAFF / ADMIN"
-        string oauth_provider "google / apple / null"
-        string oauth_id
-        timestamp created_at
-        timestamp updated_at
+        string username UK
+        string password_hash "null for OAuth users"
+        string role "USER / ORGANIZER / ADMIN"
+        string auth_provider "LOCAL / GOOGLE / FACEBOOK"
+        boolean enabled
+        timestamptz created_at
+        timestamptz updated_at
+        uuid created_by "00000000-... for system"
+        uuid updated_by
     }
 
     LINE_BINDING {
@@ -185,9 +198,13 @@ erDiagram
 
 | 欄位 | 說明 |
 |---|---|
-| `role` | `USER`：一般購票用戶；`STAFF`：票務公司員工（可管理演唱會、驗票）；`ADMIN`：系統管理員（可退款、管理帳號）|
-| `oauth_provider` | Google / Apple OAuth 登入來源；純 Email 登入時為 `null` |
-| `password_hash` | OAuth 登入用戶可為 `null` |
+| `username` | 顯示名稱，可由使用者修改（修改後 `updated_by` 記錄操作者）|
+| `role` | `USER`：一般購票用戶；`ORGANIZER`：主辦方（可管理演唱會、驗票）；`ADMIN`：系統管理員（可退款、管理帳號）|
+| `auth_provider` | `LOCAL`：Email 密碼登入；`GOOGLE` / `FACEBOOK`：OAuth 登入 |
+| `password_hash` | OAuth 登入用戶為 `null` |
+| `enabled` | 帳號是否啟用，管理員可停用異常帳號 |
+| `created_by` | 系統建立（如自行註冊）時為全零 UUID（`00000000-...`）|
+| `updated_by` | 使用者自行修改資料時為自身 UUID；管理員操作時為管理員 UUID |
 
 ---
 

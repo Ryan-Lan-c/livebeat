@@ -10,8 +10,8 @@
 
 | Token | 有效期 | 儲存位置（Web）| 儲存位置（Flutter）|
 |---|---|---|---|
-| **Access Token** | 15 分鐘 | Memory（不存 localStorage）| flutter_secure_storage |
-| **Refresh Token** | 30 天 | httpOnly + Secure Cookie | flutter_secure_storage |
+| **Access Token** | 15 分鐘（可設定）| Memory（不存 localStorage）| flutter_secure_storage |
+| **Refresh Token** | 滑動視窗（idle timeout，可設定）| httpOnly + Secure Cookie | flutter_secure_storage |
 
 > **為什麼 Access Token 不存 localStorage？**  
 > localStorage 可被 JavaScript 讀取，若有 XSS 漏洞會造成 Token 被竊取。  
@@ -28,12 +28,18 @@ sequenceDiagram
     API-->>App: 401 Unauthorized（Token 過期）
     App->>App: Axios / Dio Interceptor 攔截 401
     App->>API: POST /api/v1/auth/refresh（帶 Refresh Token）
-    API-->>App: 新的 Access Token
+    API-->>App: 新的 Access Token + 新的 Refresh Token
     App->>API: 用新 Token 重送原始請求
     API-->>App: 正常回應
 ```
 
-使用者完全無感，不會被強制登出。
+### Sliding Session（滑動式閒置登出）
+
+- **Access Token TTL** = 閒置逾時時間（例如 15 分鐘）
+- **Refresh Token TTL** = 同上，每次 `/refresh` 重置（滑動視窗）
+- 使用者持續操作 → 每次 401 後靜默刷新 → 永不登出
+- 閒置超過 TTL → Access Token 過期 → 嘗試 `/refresh` → Refresh Token 也過期 → 強制導向登入頁
+- 具體 idle timeout 數值待確認後調整 `application.yml` 設定
 
 ### Refresh Token Rotation
 

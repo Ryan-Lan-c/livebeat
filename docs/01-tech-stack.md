@@ -22,7 +22,7 @@
 |---|---|---|
 | 資料庫 | PostgreSQL 16 | 各模組獨立 Schema，Flyway 管理版本 |
 | 快取 / 分散鎖 | Redis 7+ | 庫存扣減、分散式鎖、Session |
-| 搜尋（Phase 1~2）| PostgreSQL FTS | `tsvector` + GIN index，預留 `SearchService` interface |
+| 搜尋（Phase 1~2）| PostgreSQL `pg_trgm` | `ILIKE` + GIN index 加速，無需安裝額外套件；預留 `SearchService` interface，未來可升級至 `zhparser` FTS（中文斷詞）或 Elasticsearch |
 | 搜尋（Phase 3+）| Elasticsearch | 複雜 Faceted Search，切換時只改 infrastructure 層 |
 | 物件儲存 | AWS S3 / MinIO（dev）| 圖片、票券 PDF、座位圖 SVG |
 
@@ -200,7 +200,7 @@ graph TB
     subgraph DataLayer["Data Layer"]
         PG[("PostgreSQL\n+ Flyway")]
         Redis[("Redis\n庫存鎖 / 快取")]
-        PGfts["PostgreSQL FTS\nPhase 1~2 搜尋"]
+        PGfts["PostgreSQL pg_trgm\nPhase 1~2 搜尋"]
         ES["Elasticsearch\nPhase 3+ 搜尋"]
         S3["S3 / MinIO(dev)\n圖片 / 票券 / SVG"]
     end
