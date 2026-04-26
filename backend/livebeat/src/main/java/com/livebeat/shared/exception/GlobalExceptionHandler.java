@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.stream.Collectors;
 
@@ -25,6 +26,13 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining(", "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse("VALIDATION_ERROR", message));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException e) {
+        return ResponseEntity.status(e.getStatusCode())
+                .body(new ErrorResponse("HTTP_" + e.getStatusCode().value(),
+                        e.getReason() != null ? e.getReason() : e.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

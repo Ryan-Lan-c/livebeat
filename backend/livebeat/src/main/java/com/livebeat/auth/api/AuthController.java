@@ -54,7 +54,14 @@ public class AuthController {
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logout(HttpServletResponse response) {
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        if (request.getCookies() != null) {
+            Arrays.stream(request.getCookies())
+                    .filter(c -> REFRESH_TOKEN_COOKIE.equals(c.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .ifPresent(authService::logout);
+        }
         clearRefreshTokenCookie(response);
     }
 

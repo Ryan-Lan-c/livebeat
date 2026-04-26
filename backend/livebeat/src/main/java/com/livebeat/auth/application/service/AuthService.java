@@ -66,6 +66,11 @@ public class AuthService {
         return issueTokens(user);
     }
 
+    public void logout(String tokenValue) {
+        refreshTokenRepository.findByToken(tokenValue)
+                .ifPresent(token -> refreshTokenRepository.revokeAllByUserId(token.getUserId()));
+    }
+
     private AuthResponse issueTokens(User user) {
         String accessToken = jwtService.generateAccessToken(
                 user.getId(), user.getEmail(), user.getRole().name());
