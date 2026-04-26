@@ -9,6 +9,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 
+/**
+ * [shared] 含建立時間的 JPA MappedSuperclass（第一層）
+ *
+ * 負責：提供 created_at（TIMESTAMPTZ），由 Spring Data JPA Auditing 自動填入
+ */
 @Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)

@@ -6,6 +6,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.UUID;
 
+/**
+ * [shared] Spring Security UserDetails 實作
+ *
+ * 負責：封裝已認證使用者的 UUID、email、角色資訊，供 SecurityContext 與 AuditorAware 使用
+ */
 public record UserPrincipal(
         UUID userId,
         String email,

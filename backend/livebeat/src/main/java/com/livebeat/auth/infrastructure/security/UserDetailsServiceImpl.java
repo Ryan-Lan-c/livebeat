@@ -12,6 +12,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * [auth] UserDetailsService 實作
+ *
+ * 負責：依 email 從資料庫載入使用者，轉換為 UserPrincipal 供 Spring Security 使用
+ * 依賴：UserRepository
+ */
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {

@@ -16,6 +16,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * [auth] JWT 認證過濾器
+ *
+ * 負責：從每個 HTTP 請求的 Authorization Header 中解析 Bearer Token，驗證後設定 Spring Security Context
+ * 依賴：JwtService, UserDetailsService
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {

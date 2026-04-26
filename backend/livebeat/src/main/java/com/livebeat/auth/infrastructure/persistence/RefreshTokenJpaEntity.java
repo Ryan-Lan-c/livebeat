@@ -8,6 +8,11 @@ import lombok.*;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * [auth] Refresh Token JPA 實體
+ *
+ * 負責：對應 auth.refresh_tokens 資料表；提供 toDomain / fromDomain 轉換方法
+ */
 @Entity
 @Table(name = "refresh_tokens", schema = "auth")
 @Getter

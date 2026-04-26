@@ -9,6 +9,12 @@ import lombok.*;
 
 import java.util.UUID;
 
+/**
+ * [auth] User JPA 實體
+ *
+ * 負責：對應 auth.users 資料表；繼承 AuditedEntity（created_at/updated_at/created_by/updated_by）；
+ *       提供 toDomain / fromDomain 轉換方法
+ */
 @Entity
 @Table(name = "users", schema = "auth")
 @Getter
@@ -51,6 +57,7 @@ public class UserJpaEntity extends AuditedEntity {
                 .id(id).email(email).username(username).passwordHash(passwordHash)
                 .role(role).authProvider(authProvider).enabled(enabled)
                 .organizerId(organizerId)
+                .createdBy(getCreatedBy()).updatedBy(getUpdatedBy())
                 .createdAt(getCreatedAt()).updatedAt(getUpdatedAt())
                 .build();
     }

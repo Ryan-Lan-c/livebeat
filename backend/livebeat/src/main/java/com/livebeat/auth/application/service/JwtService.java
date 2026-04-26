@@ -14,6 +14,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+/**
+ * [auth] JWT 產生與驗證服務
+ *
+ * 負責：產生 Access Token、驗證 Token 合法性、解析 Token 中的使用者資訊
+ * 依賴：JwtProperties（secret、TTL 設定）
+ */
 @Service
 @RequiredArgsConstructor
 public class JwtService {

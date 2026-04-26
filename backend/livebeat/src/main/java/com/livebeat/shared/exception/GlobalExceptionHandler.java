@@ -9,6 +9,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.stream.Collectors;
 
+/**
+ * [shared] 全域例外處理器
+ *
+ * 負責：攔截 ApiException、驗證錯誤、未預期例外，統一轉換為標準 JSON 錯誤回應格式
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

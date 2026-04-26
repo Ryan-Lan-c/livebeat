@@ -6,6 +6,11 @@ import lombok.Getter;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * [auth] Refresh Token 領域模型（純 Java，無框架依賴）
+ *
+ * 負責：封裝 Refresh Token 的狀態（revoked、expiresAt），提供有效性判斷（isValid）
+ */
 @Getter
 @Builder
 public class RefreshToken {

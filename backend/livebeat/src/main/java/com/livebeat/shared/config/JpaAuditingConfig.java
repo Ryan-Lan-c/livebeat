@@ -12,6 +12,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * [shared] JPA Auditing 設定
+ *
+ * 負責：啟用 @EnableJpaAuditing；提供 AuditorAware&lt;UUID&gt; Bean，
+ *       從 SecurityContext 取得當前登入者 UUID，無認證時回傳全零 UUID（系統操作）
+ */
 @Configuration
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class JpaAuditingConfig {
