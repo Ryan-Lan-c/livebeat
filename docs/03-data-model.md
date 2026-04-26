@@ -40,7 +40,7 @@ erDiagram
         uuid user_id FK
         string line_user_id UK
         string line_display_name
-        timestamp bound_at
+        timestamptz bound_at
     }
 
     CONCERT {
@@ -54,20 +54,20 @@ erDiagram
         string category "流行 / 搖滾 / 嘻哈 / 電子 / 古典 / 爵士 / 其他"
         string status "DRAFT / ON_SALE / CANCELLED / ENDED"
         string image_url
-        timestamp created_at
-        timestamp updated_at
+        timestamptz created_at
+        timestamptz updated_at
     }
 
     CONCERT_SESSION {
         uuid id PK
         uuid concert_id FK
         string session_name "Day1 / 第一場 / ..."
-        timestamp event_date
+        timestamptz event_date
         string status "DRAFT / ON_SALE / SOLD_OUT / CANCELLED / ENDED"
         boolean has_assigned_seats "true = 對號入座模式"
         integer max_tickets_per_order "每筆訂單上限張數"
-        timestamp sale_start_at
-        timestamp sale_end_at
+        timestamptz sale_start_at
+        timestamptz sale_end_at
         timestamp created_at
     }
 
@@ -89,7 +89,7 @@ erDiagram
         string row_label "A / B / C / ..."
         string seat_number "1 / 2 / 3 / ..."
         string status "AVAILABLE / LOCKED / SOLD"
-        timestamp locked_until "鎖定到期時間"
+        timestamptz locked_until "鎖定到期時間"
         timestamp created_at
     }
 
@@ -119,9 +119,9 @@ erDiagram
         integer total_amount
         string currency "TWD / USD"
         string idempotency_key UK "防重複下單"
-        timestamp expires_at "訂單鎖定到期（10 分鐘）"
-        timestamp created_at
-        timestamp updated_at
+        timestamptz expires_at "訂單鎖定到期（10 分鐘）"
+        timestamptz created_at
+        timestamptz updated_at
     }
 
     ORDER_ITEM {
@@ -139,7 +139,7 @@ erDiagram
         uuid seat_id FK "null = 區域票（無對號入座）"
         string ticket_code UK "用於 QR Code 的唯一識別碼"
         string status "VALID / USED / CANCELLED"
-        timestamp used_at
+        timestamptz used_at
         timestamp created_at
     }
 
@@ -153,7 +153,7 @@ erDiagram
         integer amount
         string currency
         string status "PENDING / SUCCESS / FAILED / REFUNDED"
-        timestamp paid_at
+        timestamptz paid_at
         timestamp created_at
     }
 
@@ -170,7 +170,7 @@ erDiagram
         integer total_amount
         string gateway "ECPAY / NEWEBPAY"
         string gateway_invoice_id
-        timestamp issued_at
+        timestamptz issued_at
         timestamp created_at
     }
 
