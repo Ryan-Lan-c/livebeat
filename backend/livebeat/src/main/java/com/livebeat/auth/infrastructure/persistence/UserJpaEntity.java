@@ -43,10 +43,14 @@ public class UserJpaEntity extends AuditedEntity {
     @Column(nullable = false)
     private boolean enabled;
 
+    @Column(name = "organizer_id", columnDefinition = "uuid")
+    private UUID organizerId;
+
     User toDomain() {
         return User.builder()
                 .id(id).email(email).username(username).passwordHash(passwordHash)
                 .role(role).authProvider(authProvider).enabled(enabled)
+                .organizerId(organizerId)
                 .createdAt(getCreatedAt()).updatedAt(getUpdatedAt())
                 .build();
     }
@@ -56,6 +60,7 @@ public class UserJpaEntity extends AuditedEntity {
                 .id(user.getId()).email(user.getEmail()).username(user.getUsername())
                 .passwordHash(user.getPasswordHash()).role(user.getRole())
                 .authProvider(user.getAuthProvider()).enabled(user.isEnabled())
+                .organizerId(user.getOrganizerId())
                 .build();
     }
 }

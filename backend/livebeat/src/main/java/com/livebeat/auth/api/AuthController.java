@@ -5,9 +5,9 @@ import com.livebeat.auth.application.dto.LoginRequest;
 import com.livebeat.auth.application.dto.RegisterRequest;
 import com.livebeat.auth.application.dto.TokenResponse;
 import com.livebeat.auth.application.service.AuthService;
+import com.livebeat.shared.config.JwtProperties;
 import com.livebeat.shared.exception.ApiException;
 import com.livebeat.shared.exception.ErrorCode;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -22,9 +22,10 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class AuthController {
     private static final String REFRESH_TOKEN_COOKIE = "refresh_token";
-    private static final int COOKIE_MAX_AGE = 30 * 24 * 60 * 60;
+    private static final String COOKIE_PATH = "/api/v1/auth";
 
     private final AuthService authService;
+    private final JwtProperties jwtProperties;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -58,7 +59,7 @@ public class AuthController {
         if (request.getCookies() != null) {
             Arrays.stream(request.getCookies())
                     .filter(c -> REFRESH_TOKEN_COOKIE.equals(c.getName()))
-                    .map(Cookie::getValue)
+                    .map(c -> c.getValue())
                     .findFirst()
                     .ifPresent(authService::logout);
         }
@@ -66,12 +67,7 @@ public class AuthController {
     }
 
     private void setRefreshTokenCookie(HttpServletResponse response, String token) {
-        Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE, token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false);
-        cookie.setPath("/api/v1/auth");
-        cookie.setMaxAge(COOKIE_MAX_AGE);
-        response.addCookie(cookie);
+        response.addHeader("Set-Cookie", buildCookieHeader(token, jwtProperties.refreshTokenExpirationSeconds()));
     }
 
     private String extractRefreshTokenCookie(HttpServletRequest request) {
@@ -80,16 +76,25 @@ public class AuthController {
         }
         return Arrays.stream(request.getCookies())
                 .filter(c -> REFRESH_TOKEN_COOKIE.equals(c.getName()))
-                .map(Cookie::getValue)
+                .map(c -> c.getValue())
                 .findFirst()
                 .orElseThrow(() -> new ApiException(ErrorCode.INVALID_REFRESH_TOKEN));
     }
 
     private void clearRefreshTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE, "");
-        cookie.setHttpOnly(true);
-        cookie.setPath("/api/v1/auth");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+        response.addHeader("Set-Cookie", buildCookieHeader("", 0));
+    }
+
+    private String buildCookieHeader(String value, long maxAge) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(REFRESH_TOKEN_COOKIE).append("=").append(value);
+        sb.append("; HttpOnly");
+        sb.append("; Path=").append(COOKIE_PATH);
+        sb.append("; Max-Age=").append(maxAge);
+        sb.append("; SameSite=Lax");
+        if (jwtProperties.cookieSecure()) {
+            sb.append("; Secure");
+        }
+        return sb.toString();
     }
 }

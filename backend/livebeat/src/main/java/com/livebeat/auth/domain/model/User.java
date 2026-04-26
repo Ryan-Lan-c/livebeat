@@ -18,6 +18,7 @@ public class User {
     private final UserRole role;
     private final AuthProvider authProvider;
     private final boolean enabled;
+    private final UUID organizerId;
     private final Instant createdAt;
     private final Instant updatedAt;
 

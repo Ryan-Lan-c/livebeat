@@ -60,7 +60,8 @@ app:
   jwt:
     secret: ${JWT_SECRET:dev-only-secret-key-change-in-production-env!!}
     access-token-expiration-seconds: 900
-    refresh-token-expiration-seconds: 2592000
+    refresh-token-expiration-seconds: 604800
+    cookie-secure: ${COOKIE_SECURE:false}
 
 management:
   endpoints:
