@@ -281,7 +281,7 @@ SonarQube 提供靜態代碼分析，幫助開發者在提交前發現潛在的 
 docker compose -f infrastructure/docker-compose.sonarqube.yml up -d
 ```
 
-等待約 1 分鐘後，開啟瀏覽器：http://localhost:9000  
+等待約 1 分鐘後，開啟瀏覽器：http://localhost:9090  
 預設帳號：`admin` / 預設密碼：`admin`（首次登入會要求修改密碼）
 
 **連接 IntelliJ SonarLint 到 SonarQube Server：**
@@ -413,6 +413,18 @@ docker compose ps
 | Nginx | `running` |
 | Mailpit | `running` |
 | Jaeger | `running` |
+
+### 各服務說明
+
+| 服務 | 功能說明 |
+|---|---|
+| **PostgreSQL 16** | 主資料庫。存所有永久資料：演唱會、場次、訂單、使用者帳號、付款紀錄。分成 6 個獨立 Schema（auth / concert / order / payment / notification / admin），對應 6 個後端模組 |
+| **Redis 7** | 快取 + 分散式鎖。搶票核心：庫存數量存放於 Redis，以 Lua Script 原子扣減防止超賣；同時快取演唱會資訊，避免熱門場次每次請求都打 DB |
+| **RabbitMQ 3** | 訊息佇列。搶票時不直接寫 DB，而是將「訂單建立」事件投入 Queue，Consumer 非同步寫入 PostgreSQL，DB 不承受瞬間高流量。亦負責 Email / LINE Bot 推播任務與 WebSocket 多實例 STOMP relay |
+| **MinIO** | 本機版 S3 物件儲存。存放演唱會圖片、票券 PDF、座位圖 SVG。API 完全相容 AWS S3，上線時只換 endpoint 與金鑰，程式碼不需修改 |
+| **Mailpit** | 本機 Email 測試工具。Spring Boot 發出的所有 Email（驗證信、訂票確認信）都會被攔截並顯示在 Web UI（port 8025），不會真正寄出 |
+| **Jaeger** | 分散式追蹤。記錄一個請求從前端進入，經過 Spring Boot → Redis → PostgreSQL → RabbitMQ 的完整路徑與各段耗時，用於效能瓶頸排查 |
+| **Nginx** | 反向代理。統一入口：`/api/` 導至 Spring Boot（8080）、`/` 導至使用者前台（5173）、`/admin/` 導至後台（5174）。本機開發多直接存取各自 Port，上線後 Nginx 為唯一對外入口並負責 SSL 終止 |
 
 **停止所有服務：**
 ```bash
@@ -621,11 +633,11 @@ flutter run -d <device-id>
 | **後台管理 Web** | http://localhost:5174 | Vue 3 管理介面 |
 | **PostgreSQL** | localhost:5432 | 資料庫（user: postgres, db: livebeat）|
 | **Redis** | localhost:6379 | 快取 / 分散鎖 |
-| **RabbitMQ Management** | http://localhost:15672 | 訊息佇列管理介面（guest/guest）|
+| **RabbitMQ Management** | http://localhost:15672 | 訊息佇列管理介面（livebeat / livebeat_dev）|
 | **MinIO Console** | http://localhost:9001 | 物件儲存管理介面 |
 | **Mailpit** | http://localhost:8025 | 本機 Email 收件匣（測試用）|
 | **Jaeger UI** | http://localhost:16686 | 分散式追蹤 |
-| **SonarQube** | http://localhost:9000 | 代碼品質（需另外啟動）|
+| **SonarQube** | http://localhost:9090 | 代碼品質（需另外啟動）|
 
 ---
 
