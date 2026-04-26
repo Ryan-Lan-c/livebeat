@@ -1,0 +1,78 @@
+spring:
+  application:
+    name: livebeat
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/livebeat
+    username: ${POSTGRES_USER:livebeat}
+    password: ${POSTGRES_PASSWORD:livebeat_dev}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+    show-sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ${REDIS_PASSWORD:livebeat_dev}
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 10
+          min-idle: 2
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: ${RABBITMQ_USER:livebeat}
+    password: ${RABBITMQ_PASSWORD:livebeat_dev}
+    virtual-host: /
+
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev-only-secret-key-change-in-production-env!!}
+    access-token-expiration-seconds: 900
+    refresh-token-expiration-seconds: 2592000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    com.livebeat: DEBUG
+    org.springframework.security: DEBUG
+    org.flywaydb: INFO
