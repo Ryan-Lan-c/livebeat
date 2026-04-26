@@ -1,7 +1,7 @@
 # LiveBeat — 專案總覽
 
 > 最後更新：2026-04-26（UTC+8）
-> 狀態：**架構討論完成，準備開始實作**
+> 狀態：**Phase 1 進行中 — Auth Module 完成**
 
 ---
 
@@ -9,7 +9,7 @@
 
 一套供全球使用、支援極高並發的演唱會訂票平台。  
 票務公司員工透過後台管理演唱會與場次；使用者在前台網站或 Flutter App 登入後購票。  
-技術核心為 Java 25 + Spring Boot 3 Modular Monolith，搭配 Vue 3 前端與 Flutter 行動 App。
+技術核心為 Java 25 + Spring Boot 4 Modular Monolith，搭配 Vue 3 前端與 Flutter 行動 App。
 
 ---
 
@@ -40,7 +40,10 @@
 | 資料模型初稿 | ✅ 完成（見 [03 — 資料模型](docs/03-data-model.md)）|
 | API 初稿 | ✅ 完成（見 [04 — API 設計](docs/04-api.md)）|
 | 前台 UI 參考 | ✅ LiveBeat_Vue3 Demo 版 |
-| 後端實作 | ⏳ Phase 1 準備開始 |
+| Docker Compose 本機環境 | ✅ 完成 |
+| Auth Module | ✅ 完成（JWT register/login/refresh/logout）|
+| Concert Module | ⏳ 尚未開始 |
+| 後台 Admin Module | ⏳ 尚未開始 |
 | 前台實作 | ⏳ 尚未開始 |
 | 後台實作 | ⏳ 尚未開始 |
 | Flutter App | ⏳ 尚未開始 |

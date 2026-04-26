@@ -9,7 +9,7 @@
 | 項目 | 選用 | 備註 |
 |---|---|---|
 | 語言 | Java 25 | Virtual Threads (Project Loom)，高 I/O 並發 |
-| 框架 | Spring Boot 3.x | Spring Security / Spring Data JPA / Spring Batch |
+| 框架 | Spring Boot 4.x | Spring Security / Spring Data JPA / Spring Batch |
 | 模組化 | Spring Modulith | 強制 Modular Monolith 邊界，支援漸進式拆分 |
 | 架構風格 | Hexagonal Architecture | Ports & Adapters，domain 層零框架依賴 |
 | 建構工具 | Gradle (Groovy DSL) | |
@@ -188,7 +188,7 @@ graph TB
 
     subgraph Backend["後端（Modular Monolith）"]
         GW["Spring Cloud Gateway\nJWT 驗證 / Token Bucket 限流"]
-        App["Spring Boot 3 — Hexagonal Modular Monolith\nSpring Modulith + Java 25 Virtual Threads + Spring Batch\n[ auth | concert | order | payment | notification | admin ]"]
+        App["Spring Boot 4 — Hexagonal Modular Monolith\nSpring Modulith + Java 25 Virtual Threads + Spring Batch\n[ auth | concert | order | payment | notification | admin ]"]
         WS["WebSocket STOMP Broker\n即時票況廣播"]
     end
 
