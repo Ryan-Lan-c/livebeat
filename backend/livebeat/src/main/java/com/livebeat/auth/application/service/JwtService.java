@@ -11,6 +11,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -18,9 +19,9 @@ import java.util.function.Function;
 public class JwtService {
     private final JwtProperties jwtProperties;
 
-    public String generateAccessToken(Long userId, String email, String role) {
+    public String generateAccessToken(UUID userId, String email, String role) {
         return buildToken(
-                Map.of("uid", String.valueOf(userId), "role", role),
+                Map.of("uid", userId.toString(), "role", role),
                 email,
                 jwtProperties.accessTokenExpirationSeconds() * 1000L
         );
@@ -38,8 +39,8 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public Long extractUserId(String token) {
-        return Long.valueOf(extractClaim(token, c -> c.get("uid", String.class)));
+    public UUID extractUserId(String token) {
+        return UUID.fromString(extractClaim(token, c -> c.get("uid", String.class)));
     }
 
     private String buildToken(Map<String, Object> claims, String subject, long expirationMs) {

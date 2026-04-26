@@ -3,10 +3,11 @@ package com.livebeat.auth.infrastructure.persistence;
 import com.livebeat.auth.domain.model.AuthProvider;
 import com.livebeat.auth.domain.model.User;
 import com.livebeat.auth.domain.model.UserRole;
+import com.livebeat.shared.persistence.AuditedEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users", schema = "auth")
@@ -15,10 +16,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserJpaEntity {
+public class UserJpaEntity extends AuditedEntity {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid", updatable = false)
+    private UUID id;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -40,17 +43,11 @@ public class UserJpaEntity {
     @Column(nullable = false)
     private boolean enabled;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
     User toDomain() {
         return User.builder()
                 .id(id).email(email).username(username).passwordHash(passwordHash)
                 .role(role).authProvider(authProvider).enabled(enabled)
-                .createdAt(createdAt).updatedAt(updatedAt)
+                .createdAt(getCreatedAt()).updatedAt(getUpdatedAt())
                 .build();
     }
 
@@ -59,7 +56,6 @@ public class UserJpaEntity {
                 .id(user.getId()).email(user.getEmail()).username(user.getUsername())
                 .passwordHash(user.getPasswordHash()).role(user.getRole())
                 .authProvider(user.getAuthProvider()).enabled(user.isEnabled())
-                .createdAt(user.getCreatedAt()).updatedAt(user.getUpdatedAt())
                 .build();
     }
 }

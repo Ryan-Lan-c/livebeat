@@ -2,11 +2,15 @@ package com.livebeat.auth.infrastructure.security;
 
 import com.livebeat.auth.domain.model.User;
 import com.livebeat.auth.domain.port.UserRepository;
+import com.livebeat.shared.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -17,11 +21,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password(user.getPasswordHash() != null ? user.getPasswordHash() : "")
-                .roles(user.getRole().name())
-                .disabled(!user.isEnabled())
-                .build();
+        return new UserPrincipal(
+                user.getId(),
+                user.getEmail(),
+                user.getPasswordHash() != null ? user.getPasswordHash() : "",
+                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())),
+                user.isEnabled()
+        );
     }
 }

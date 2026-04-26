@@ -4,24 +4,24 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.With;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Builder
 @With
 public class User {
-    private final Long id;
+    private final UUID id;
     private final String email;
     private final String username;
     private final String passwordHash;
     private final UserRole role;
     private final AuthProvider authProvider;
     private final boolean enabled;
-    private final LocalDateTime createdAt;
-    private final LocalDateTime updatedAt;
+    private final Instant createdAt;
+    private final Instant updatedAt;
 
     public static User create(String email, String username, String passwordHash) {
-        LocalDateTime now = LocalDateTime.now();
         return User.builder()
                 .email(email)
                 .username(username)
@@ -29,8 +29,6 @@ public class User {
                 .role(UserRole.USER)
                 .authProvider(AuthProvider.LOCAL)
                 .enabled(true)
-                .createdAt(now)
-                .updatedAt(now)
                 .build();
     }
 }

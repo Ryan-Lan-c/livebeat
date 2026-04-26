@@ -6,8 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -26,13 +27,13 @@ class RefreshTokenRepositoryAdapter implements RefreshTokenRepository {
 
     @Override
     @Transactional
-    public void revokeAllByUserId(Long userId) {
+    public void revokeAllByUserId(UUID userId) {
         jpa.revokeAllByUserId(userId);
     }
 
     @Override
     @Transactional
     public void deleteExpired() {
-        jpa.deleteByExpiresAtBefore(LocalDateTime.now());
+        jpa.deleteByExpiresAtBefore(Instant.now());
     }
 }

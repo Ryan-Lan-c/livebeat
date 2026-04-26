@@ -1,8 +1,10 @@
 package com.livebeat.auth.application.dto;
 
+import java.util.UUID;
+
 public record TokenResponse(
         String accessToken,
-        Long userId,
+        UUID userId,
         String email,
         String username,
         String role

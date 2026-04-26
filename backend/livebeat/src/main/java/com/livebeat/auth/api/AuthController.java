@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Arrays;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private static final String REFRESH_TOKEN_COOKIE = "refresh_token";
@@ -69,7 +69,7 @@ public class AuthController {
         Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE, token);
         cookie.setHttpOnly(true);
         cookie.setSecure(false);
-        cookie.setPath("/api/auth");
+        cookie.setPath("/api/v1/auth");
         cookie.setMaxAge(COOKIE_MAX_AGE);
         response.addCookie(cookie);
     }
@@ -88,7 +88,7 @@ public class AuthController {
     private void clearRefreshTokenCookie(HttpServletResponse response) {
         Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE, "");
         cookie.setHttpOnly(true);
-        cookie.setPath("/api/auth");
+        cookie.setPath("/api/v1/auth");
         cookie.setMaxAge(0);
         response.addCookie(cookie);
     }
