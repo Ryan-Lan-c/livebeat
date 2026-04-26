@@ -11,7 +11,7 @@
 | Token | 有效期 | 儲存位置（Web）| 儲存位置（Flutter）|
 |---|---|---|---|
 | **Access Token** | 15 分鐘（可設定）| Memory（不存 localStorage）| flutter_secure_storage |
-| **Refresh Token** | 滑動視窗（idle timeout，可設定）| httpOnly + Secure Cookie | flutter_secure_storage |
+| **Refresh Token** | 7 天（可設定）；每次 `/refresh` 重置，活躍用戶永不過期 | HttpOnly Cookie（SameSite=Lax）| flutter_secure_storage |
 
 > **為什麼 Access Token 不存 localStorage？**  
 > localStorage 可被 JavaScript 讀取，若有 XSS 漏洞會造成 Token 被竊取。  
@@ -33,13 +33,18 @@ sequenceDiagram
     API-->>App: 正常回應
 ```
 
-### Sliding Session（滑動式閒置登出）
+### Idle Session 警告（前端負責）
 
-- **Access Token TTL** = 閒置逾時時間（例如 15 分鐘）
-- **Refresh Token TTL** = 同上，每次 `/refresh` 重置（滑動視窗）
-- 使用者持續操作 → 每次 401 後靜默刷新 → 永不登出
-- 閒置超過 TTL → Access Token 過期 → 嘗試 `/refresh` → Refresh Token 也過期 → 強制導向登入頁
-- 具體 idle timeout 數值待確認後調整 `application.yml` 設定
+閒置登出邏輯由前端管理，後端只負責 Token 的發放與撤銷：
+
+| 情境 | 行為 |
+|---|---|
+| 使用者持續操作（打 API、點擊、滑動）| 前端重置 60 分鐘計時器 |
+| 閒置滿 60 分鐘 | 前端跳出警告視窗（「是否仍在線？」）+ 5 分鐘倒數 |
+| 倒數內點擊「是」| 前端呼叫 `/refresh`，後端發新 Token，計時器重置 |
+| 倒數結束無回應 | 前端呼叫 `/logout`，後端撤銷 Refresh Token，導向登入頁 |
+| 關閉瀏覽器 / 滑掉 App | Cookie 持久保存（max-age=7天）；下次開啟直接恢復登入 |
+| Refresh Token 超過 7 天未使用 | Token 自然過期，下次開啟需重新登入 |
 
 ### Refresh Token Rotation
 
@@ -174,10 +179,12 @@ Spring Boot 透過 `spring-vault-core` 在啟動時動態取得 Secret。
 
 ## 六、角色與權限
 
-| 角色 | 可以做什麼 |
-|---|---|
-| `USER` | 瀏覽演唱會、購票、查看自己的訂單與票券 |
-| `STAFF` | 所有 USER 權限 + 管理演唱會 / 場次 / 票區、查看所有訂單、驗票、查看報表 |
-| `ADMIN` | 所有 STAFF 權限 + 退款、管理使用者帳號與角色、查看操作日誌、發送全體推播 |
+| 角色 | 對象 | 可以做什麼 |
+|---|---|---|
+| `USER` | 一般購票用戶 | 瀏覽演唱會、購票、查看自己的訂單與票券、管理個人資料 |
+| `ORGANIZER` | 演唱會主辦方 | 管理自己的演唱會 / 場次 / 票區、查看自己演唱會的訂單與報表、建立並管理旗下 STAFF 帳號 |
+| `STAFF` | 現場驗票工作人員 | 僅限驗票（掃 QR Code）與查詢入場記錄；由 ORGANIZER 建立帳號 |
+| `ADMIN` | 系統管理員 | 全部權限，包含退款、停用帳號、修改角色、查看操作日誌、發送全體推播 |
 
-> 角色權限由 Spring Security 的 `@PreAuthorize` 注解控制，在 API 層強制驗證。
+> 角色權限由 Spring Security 的 `@PreAuthorize` 注解控制，在 API 層強制驗證。  
+> ORGANIZER 的資料隔離（只能操作自己的演唱會）在 Service 層加 `where organizer_id = 當前登入者` 過濾。

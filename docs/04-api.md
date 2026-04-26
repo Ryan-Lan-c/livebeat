@@ -115,13 +115,14 @@ OpenAPI JSON：http://localhost:8080/v3/api-docs
 
 ## 後台管理端 API
 
-> 所有後台 API 需要 `STAFF` 或 `ADMIN` 角色的 JWT Token。
+> 角色說明：`ORGANIZER`（主辦方）、`STAFF`（驗票工作人員）、`ADMIN`（系統管理員）。  
+> ORGANIZER 只能操作自己建立的演唱會與相關資料；ADMIN 可操作全部。
 
 ### 總覽
 
 | Method | Path | 說明 | 所需角色 |
 |---|---|---|---|
-| GET | `/api/v1/admin/dashboard` | 即時總覽（今日銷量、金額、用戶數）| STAFF |
+| GET | `/api/v1/admin/dashboard` | 即時總覽（今日銷量、金額、用戶數）| ORGANIZER / ADMIN |
 
 ---
 
@@ -129,24 +130,26 @@ OpenAPI JSON：http://localhost:8080/v3/api-docs
 
 | Method | Path | 說明 | 所需角色 |
 |---|---|---|---|
-| POST | `/api/v1/admin/concerts` | 新增演唱會 | STAFF |
-| PUT | `/api/v1/admin/concerts/{id}` | 更新演唱會基本資訊 | STAFF |
+| POST | `/api/v1/admin/concerts` | 新增演唱會 | ORGANIZER / ADMIN |
+| PUT | `/api/v1/admin/concerts/{id}` | 更新演唱會基本資訊 | ORGANIZER / ADMIN |
 | DELETE | `/api/v1/admin/concerts/{id}` | 刪除演唱會（僅 DRAFT 狀態可刪）| ADMIN |
-| POST | `/api/v1/admin/concerts/{id}/sessions` | 新增場次 | STAFF |
-| PUT | `/api/v1/admin/concerts/{id}/sessions/{sid}` | 更新場次資訊 | STAFF |
-| PATCH | `/api/v1/admin/concerts/{id}/sessions/{sid}/status` | 更新場次狀態（上架 / 下架）| STAFF |
-| POST | `/api/v1/admin/concerts/{id}/seat-map` | 上傳 SVG 座位圖 | STAFF |
-| POST | `/api/v1/admin/concerts/{id}/seat-map/hotspots` | 儲存票區熱區座標 | STAFF |
+| POST | `/api/v1/admin/concerts/{id}/sessions` | 新增場次 | ORGANIZER / ADMIN |
+| PUT | `/api/v1/admin/concerts/{id}/sessions/{sid}` | 更新場次資訊 | ORGANIZER / ADMIN |
+| PATCH | `/api/v1/admin/concerts/{id}/sessions/{sid}/status` | 更新場次狀態（上架 / 下架）| ORGANIZER / ADMIN |
+| POST | `/api/v1/admin/concerts/{id}/seat-map` | 上傳 SVG 座位圖 | ORGANIZER / ADMIN |
+| POST | `/api/v1/admin/concerts/{id}/seat-map/hotspots` | 儲存票區熱區座標 | ORGANIZER / ADMIN |
 
 ---
 
 ### 訂單管理
 
+> ORGANIZER 只能查看自己演唱會的訂單。
+
 | Method | Path | 說明 | 所需角色 |
 |---|---|---|---|
-| GET | `/api/v1/admin/orders` | 所有訂單（支援搜尋、篩選、分頁）| STAFF |
-| GET | `/api/v1/admin/orders/{id}` | 訂單詳情 | STAFF |
-| GET | `/api/v1/admin/orders/export` | 匯出訂單 CSV | STAFF |
+| GET | `/api/v1/admin/orders` | 訂單列表（支援搜尋、篩選、分頁）| ORGANIZER / ADMIN |
+| GET | `/api/v1/admin/orders/{id}` | 訂單詳情 | ORGANIZER / ADMIN |
+| GET | `/api/v1/admin/orders/export` | 匯出訂單 CSV | ORGANIZER / ADMIN |
 
 ---
 
@@ -160,10 +163,12 @@ OpenAPI JSON：http://localhost:8080/v3/api-docs
 
 ### 統計報表
 
+> ORGANIZER 只能查看自己演唱會的報表。
+
 | Method | Path | 說明 | 所需角色 |
 |---|---|---|---|
-| GET | `/api/v1/admin/revenue` | 收入報表（支援 `?period=day/week/month/year`）| STAFF |
-| GET | `/api/v1/admin/concerts/{id}/stats` | 單場演唱會各場次銷售統計 | STAFF |
+| GET | `/api/v1/admin/revenue` | 收入報表（支援 `?period=day/week/month/year`）| ORGANIZER / ADMIN |
+| GET | `/api/v1/admin/concerts/{id}/stats` | 單場演唱會各場次銷售統計 | ORGANIZER / ADMIN |
 
 ---
 
@@ -171,8 +176,8 @@ OpenAPI JSON：http://localhost:8080/v3/api-docs
 
 | Method | Path | 說明 | 所需角色 |
 |---|---|---|---|
-| POST | `/api/v1/admin/tickets/verify` | 驗票（掃描 QR Code 內容後呼叫）| STAFF |
-| GET | `/api/v1/admin/tickets/scan-log` | 入場記錄查詢 | STAFF |
+| POST | `/api/v1/admin/tickets/verify` | 驗票（掃描 QR Code 內容後呼叫）| STAFF / ORGANIZER / ADMIN |
+| GET | `/api/v1/admin/tickets/scan-log` | 入場記錄查詢 | STAFF / ORGANIZER / ADMIN |
 
 **POST `/api/v1/admin/tickets/verify` Request Body：**
 ```json
@@ -180,6 +185,18 @@ OpenAPI JSON：http://localhost:8080/v3/api-docs
   "qrContent": "ticket_code.timestamp_window.hmac_signature"
 }
 ```
+
+---
+
+### STAFF 帳號管理
+
+> ORGANIZER 建立與管理自己旗下的驗票工作人員帳號。
+
+| Method | Path | 說明 | 所需角色 |
+|---|---|---|---|
+| POST | `/api/v1/admin/staff` | 建立 STAFF 帳號（自動綁定至當前 ORGANIZER）| ORGANIZER / ADMIN |
+| GET | `/api/v1/admin/staff` | 查看自己旗下的 STAFF 列表 | ORGANIZER / ADMIN |
+| DELETE | `/api/v1/admin/staff/{id}` | 停用 STAFF 帳號 | ORGANIZER / ADMIN |
 
 ---
 

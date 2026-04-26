@@ -25,9 +25,10 @@ erDiagram
         string email UK
         string username UK
         string password_hash "null for OAuth users"
-        string role "USER / ORGANIZER / ADMIN"
+        string role "USER / ORGANIZER / STAFF / ADMIN"
         string auth_provider "LOCAL / GOOGLE / FACEBOOK"
         boolean enabled
+        uuid organizer_id FK "null for USER/ORGANIZER/ADMIN; STAFF 填所屬 ORGANIZER UUID"
         timestamptz created_at
         timestamptz updated_at
         uuid created_by "00000000-... for system"
@@ -199,10 +200,11 @@ erDiagram
 | 欄位 | 說明 |
 |---|---|
 | `username` | 顯示名稱，可由使用者修改（修改後 `updated_by` 記錄操作者）|
-| `role` | `USER`：一般購票用戶；`ORGANIZER`：主辦方（可管理演唱會、驗票）；`ADMIN`：系統管理員（可退款、管理帳號）|
+| `role` | `USER`：一般購票用戶；`ORGANIZER`：主辦方（可管理自己的演唱會、場次、票區、查報表）；`STAFF`：驗票工作人員（只能驗票）；`ADMIN`：系統管理員（可退款、管理帳號）|
 | `auth_provider` | `LOCAL`：Email 密碼登入；`GOOGLE` / `FACEBOOK`：OAuth 登入 |
 | `password_hash` | OAuth 登入用戶為 `null` |
 | `enabled` | 帳號是否啟用，管理員可停用異常帳號 |
+| `organizer_id` | 僅 `STAFF` 使用；指向管理此工作人員的 ORGANIZER UUID；其他角色為 `null`。ORGANIZER 帳號刪除時自動設為 `null`（`ON DELETE SET NULL`）|
 | `created_by` | 系統建立（如自行註冊）時為全零 UUID（`00000000-...`）|
 | `updated_by` | 使用者自行修改資料時為自身 UUID；管理員操作時為管理員 UUID |
 
