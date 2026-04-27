@@ -44,6 +44,12 @@ public class SecurityConfig {
                                 ApiVersion.V1 + "/auth/logout",
                                 "/actuator/health"
                         ).permitAll()
+                        .requestMatchers(
+                                ApiVersion.V1 + "/concerts",
+                                ApiVersion.V1 + "/concerts/**"
+                        ).permitAll()
+                        .requestMatchers(ApiVersion.V1 + "/admin/**")
+                                .hasAnyRole("ADMIN", "ORGANIZER", "STAFF")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

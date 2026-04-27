@@ -141,10 +141,16 @@ OpenAPI JSON：http://localhost:8080/v3/api-docs
 |---|---|---|---|
 | POST | `/api/v1/admin/concerts` | 新增演唱會 | ORGANIZER / ADMIN |
 | PUT | `/api/v1/admin/concerts/{id}` | 更新演唱會基本資訊 | ORGANIZER / ADMIN |
+| PATCH | `/api/v1/admin/concerts/{id}/status` | 更新演唱會狀態（DRAFT → PUBLISHED → ON_SALE 等）| ORGANIZER / ADMIN |
 | DELETE | `/api/v1/admin/concerts/{id}` | 刪除演唱會（僅 DRAFT 狀態可刪）| ADMIN |
+| POST | `/api/v1/admin/concerts/{id}/image` | 上傳演唱會封面圖（multipart/form-data），回傳 image_url | ORGANIZER / ADMIN |
 | POST | `/api/v1/admin/concerts/{id}/sessions` | 新增場次 | ORGANIZER / ADMIN |
 | PUT | `/api/v1/admin/concerts/{id}/sessions/{sid}` | 更新場次資訊 | ORGANIZER / ADMIN |
 | PATCH | `/api/v1/admin/concerts/{id}/sessions/{sid}/status` | 更新場次狀態（上架 / 下架）| ORGANIZER / ADMIN |
+| DELETE | `/api/v1/admin/concerts/{id}/sessions/{sid}` | 刪除場次（僅 DRAFT 狀態可刪）| ORGANIZER / ADMIN |
+| POST | `/api/v1/admin/concerts/{id}/sessions/{sid}/zones` | 新增票區 | ORGANIZER / ADMIN |
+| PUT | `/api/v1/admin/concerts/{id}/sessions/{sid}/zones/{zid}` | 更新票區（票區名稱、價格、總座位數）| ORGANIZER / ADMIN |
+| DELETE | `/api/v1/admin/concerts/{id}/sessions/{sid}/zones/{zid}` | 刪除票區（僅無已售票或鎖定票可刪）| ORGANIZER / ADMIN |
 | POST | `/api/v1/admin/concerts/{id}/seat-map` | 上傳 SVG 座位圖 | ORGANIZER / ADMIN |
 | POST | `/api/v1/admin/concerts/{id}/seat-map/hotspots` | 儲存票區熱區座標 | ORGANIZER / ADMIN |
 

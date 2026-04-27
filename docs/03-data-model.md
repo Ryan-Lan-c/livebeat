@@ -90,7 +90,7 @@ erDiagram
         string city
         string country
         string category "流行 / 搖滾 / 嘻哈 / 電子 / 古典 / 爵士 / 其他"
-        string status "DRAFT / ON_SALE / CANCELLED / ENDED"
+        string status "DRAFT / PUBLISHED / ON_SALE / CANCELLED / ENDED"
         string image_url
         uuid organizer_id FK "負責此演唱會的 ORGANIZER 或 ADMIN UUID"
         timestamptz created_at
@@ -305,7 +305,7 @@ erDiagram
 | 欄位 | 說明 |
 |---|---|
 | `organizer_id` | 負責此演唱會的使用者 UUID；目前由 ADMIN 建立時填入 ADMIN 自身 UUID，未來 ORGANIZER 自建時填入其 UUID；資料隔離依據：ORGANIZER 只能操作 `organizer_id = 自身 UUID` 的演唱會 |
-| `status` | `DRAFT`：草稿（未公開）；`ON_SALE`：開賣中；`CANCELLED`：取消；`ENDED`：已結束 |
+| `status` | `DRAFT`：草稿（未公開，僅後台可見）；`PUBLISHED`：已公告（使用者可瀏覽、追蹤，尚未開賣）；`ON_SALE`：開賣中；`CANCELLED`：取消；`ENDED`：已結束 |
 | `category` | 音樂類型，用於前台篩選 |
 
 ---
