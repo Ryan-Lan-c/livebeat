@@ -21,6 +21,7 @@
 | 搜尋索引 | PostgreSQL `pg_trgm` | 啟用 GIN index 加速中文關鍵字搜尋（藝人名、場館、標題）。若未來需要中文斷詞，可升級至 `zhparser` 文字搜尋設定 |
 | Audit 欄位 | Spring Data JPA Auditing | 共用三層 `@MappedSuperclass`：`CreatedEntity`（created_at）、`TimestampedEntity`（+ updated_at）、`AuditedEntity`（+ created_by、updated_by）。`created_by` / `updated_by` 存 UUID，系統操作填全零 UUID（`00000000-...`） |
 | DB 說明 | 雙語 Comment | 所有 table 與 column 均加 `COMMENT ON`，格式為 `English \| 繁體中文` |
+| 帳號架構 | 核心身份 + Profile 延伸 | `auth.users` 僅存認證核心欄位（email、role、password_hash）；各角色延伸資料獨立成 profile 表（`auth.user_profiles`、`auth.organizer_profiles`），避免 nullable 欄位膨脹；ADMIN / STAFF 無需 profile 表 |
 
 ---
 
@@ -51,6 +52,35 @@ erDiagram
         timestamptz bound_at
     }
 
+    USER_PROFILE {
+        uuid user_id PK "FK to USER; 一對一"
+        string avatar_url
+        string phone
+        date birth_date
+        text address
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    ORGANIZER_PROFILE {
+        uuid user_id PK "FK to USER; 一對一"
+        string company_name
+        string company_tax_id "統一編號"
+        string contact_person
+        string contact_phone
+        boolean is_blacklisted
+        text blacklist_reason "null if not blacklisted"
+        timestamptz blacklisted_at
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    USER_FOLLOWED_CONCERT {
+        uuid user_id FK
+        uuid concert_id FK
+        timestamptz followed_at
+    }
+
     CONCERT {
         uuid id PK
         string title
@@ -62,6 +92,7 @@ erDiagram
         string category "流行 / 搖滾 / 嘻哈 / 電子 / 古典 / 爵士 / 其他"
         string status "DRAFT / ON_SALE / CANCELLED / ENDED"
         string image_url
+        uuid organizer_id FK "負責此演唱會的 ORGANIZER 或 ADMIN UUID"
         timestamptz created_at
         timestamptz updated_at
     }
@@ -197,6 +228,11 @@ erDiagram
     TICKET }o--o| SEAT : "assigned（對號入座）"
     ORDER ||--o| PAYMENT : "paid by"
     ORDER ||--o| ELECTRONIC_INVOICE : "invoiced"
+    USER ||--o| USER_PROFILE : "has profile"
+    USER ||--o| ORGANIZER_PROFILE : "has organizer profile"
+    USER ||--o{ CONCERT : "manages"
+    USER ||--o{ USER_FOLLOWED_CONCERT : "follows"
+    CONCERT ||--o{ USER_FOLLOWED_CONCERT : "followed by"
 ```
 
 ---
@@ -227,10 +263,48 @@ erDiagram
 
 ---
 
+### `USER_PROFILE`（使用者個人資料）
+
+> 僅 `USER` 角色使用。`auth.users` 只存認證核心欄位，此表存放購票使用者的個人延伸資料。
+
+| 欄位 | 說明 |
+|---|---|
+| `user_id` | 同時作為 PK 與 FK，與 `auth.users.id` 一對一對應 |
+| `avatar_url` | 大頭貼圖片 URL（存於 MinIO / S3）|
+| `phone` | 聯絡電話 |
+| `birth_date` | 生日（可用於年齡限制驗證）|
+| `address` | 居住地址（票券郵寄用途，選填）|
+
+---
+
+### `ORGANIZER_PROFILE`（主辦方延伸資料）
+
+> 僅 `ORGANIZER` 角色使用。存放主辦方的公司資訊與黑名單狀態。
+
+| 欄位 | 說明 |
+|---|---|
+| `user_id` | 同時作為 PK 與 FK，與 `auth.users.id` 一對一對應 |
+| `company_name` | 主辦公司名稱 |
+| `company_tax_id` | 統一編號（用於電子發票開立）|
+| `contact_person` | 主要聯絡人姓名 |
+| `contact_phone` | 聯絡電話 |
+| `is_blacklisted` | 是否列入黑名單（黑名單主辦方無法新增演唱會）|
+| `blacklist_reason` | 黑名單原因（`is_blacklisted = true` 時填入）|
+| `blacklisted_at` | 列入黑名單的時間 |
+
+---
+
+### `USER_FOLLOWED_CONCERT`（追蹤演唱會）
+
+> USER 與 CONCERT 的多對多橋接表。複合主鍵 `(user_id, concert_id)`，同一使用者不可重複追蹤同一演唱會。
+
+---
+
 ### `CONCERT`（演唱會）
 
 | 欄位 | 說明 |
 |---|---|
+| `organizer_id` | 負責此演唱會的使用者 UUID；目前由 ADMIN 建立時填入 ADMIN 自身 UUID，未來 ORGANIZER 自建時填入其 UUID；資料隔離依據：ORGANIZER 只能操作 `organizer_id = 自身 UUID` 的演唱會 |
 | `status` | `DRAFT`：草稿（未公開）；`ON_SALE`：開賣中；`CANCELLED`：取消；`ENDED`：已結束 |
 | `category` | 音樂類型，用於前台篩選 |
 
