@@ -730,4 +730,56 @@ docker pull --platform linux/amd64 <image-name>
 
 ---
 
+### Q9：MinIO 整合測試（`MinioStorageAdapterTest`）一直 SKIPPED，不是 PASSED
+
+**症狀**
+
+執行 `./gradlew test` 後，`MinioStorageAdapterTest` 兩個測試都顯示 `SKIPPED`，Gradle `--info` log 出現：
+
+```
+Could not find a valid Docker environment.
+UnixSocketClientProviderStrategy: failed with exception
+  BadRequestException (Status 400: {"ID":"","Containers":0,...})
+```
+
+---
+
+**根本原因**
+
+Docker Desktop **4.40+（Docker Engine 29.x）** 把 Docker API 最低支援版本從 1.26 提高到了 **1.40**。
+
+Testcontainers 內建的 shaded docker-java 預設使用 **API 1.32** 做初始連線協商，對代理 socket 發出的請求是 `/v1.32/_ping`，Docker Desktop 一律回傳 HTTP 400，Testcontainers 因此判斷 Docker 不可用，將所有測試標記為 SKIPPED。
+
+> **版本說明**：目前已知 Docker Desktop 4.40+（Docker Engine 29.x）與 Testcontainers 1.21.3 內建的 `api.version=1.32` 搭配會觸發此問題。  
+> 後續 Docker Desktop 或 Testcontainers 版本仍可能改變，此文件只記錄當時的排查結果。
+
+---
+
+**踩雷過程**
+
+1. `docker info` 正常，排除 Docker 本身沒有在跑的問題
+2. `docker context ls` 看到 active context 是 `desktop-linux`（socket 路徑 `~/.docker/run/docker.sock`），與 Testcontainers 預設連線的 `/var/run/docker.sock` 不一致
+3. 嘗試設定 `DOCKER_HOST`、`DOCKER_API_VERSION` 環境變數——無效（Gradle daemon 有環境隔離，且這些 env var 不是 shaded docker-java 實際讀取的設定路徑）
+4. 嘗試升級 Testcontainers 版本（1.20.6 → 1.21.3）——無效，問題相同
+5. 用 curl 直接打代理 socket，確認是 API 版本被拒的問題：
+   ```bash
+   curl --unix-socket /var/run/docker.sock http://localhost/v1.32/_ping  # → HTTP 400 ✗
+   curl --unix-socket /var/run/docker.sock http://localhost/v1.47/_ping  # → HTTP 200 ✓
+   ```
+6. 反編譯 Testcontainers jar 內的 shaded `DefaultDockerClientConfig`，發現它從 classpath 上的 `/docker-java.properties` 讀取設定，property key 是 `api.version`（不是常見的 `DOCKER_API_VERSION` env var）
+
+---
+
+**修復方式**
+
+在 `backend/livebeat/src/test/resources/docker-java.properties` 加入：
+
+```properties
+api.version=1.47
+```
+
+Testcontainers 的 shaded docker-java 讀取此檔後改用 `/v1.47/_ping` 做偵測，成功通過，測試由 SKIPPED 變為 PASSED。
+
+---
+
 > 若遇到本文件未列出的問題，請在 GitHub Issue 回報，並附上錯誤訊息與作業系統版本。
