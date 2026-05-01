@@ -1,4 +1,4 @@
-package com.livebeat.auth.application.dto;
+package com.livebeat.auth.api.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -8,6 +8,6 @@ import jakarta.validation.constraints.Size;
  *
  * 負責：PUT /api/v1/auth/me 的請求格式，目前支援更新顯示名稱（username）
  */
-public record UpdateProfileRequest(
+public record UpdateMeRequest(
         @NotBlank @Size(min = 3, max = 50) String username
 ) {}

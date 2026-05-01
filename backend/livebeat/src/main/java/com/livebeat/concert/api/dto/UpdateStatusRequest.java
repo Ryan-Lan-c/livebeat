@@ -1,4 +1,4 @@
-package com.livebeat.concert.application.dto;
+package com.livebeat.concert.api.dto;
 
 import com.livebeat.concert.domain.model.ConcertStatus;
 import jakarta.validation.constraints.NotNull;

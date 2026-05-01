@@ -1,4 +1,4 @@
-package com.livebeat.concert.application.dto;
+package com.livebeat.concert.api.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;

@@ -1,4 +1,4 @@
-package com.livebeat.auth.application.dto;
+package com.livebeat.auth.api.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
