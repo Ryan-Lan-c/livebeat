@@ -7,6 +7,7 @@ import com.livebeat.shared.persistence.AuditedEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -61,12 +62,19 @@ public class ConcertJpaEntity extends AuditedEntity {
     @Column(name = "organizer_id", nullable = false, columnDefinition = "uuid")
     private UUID organizerId;
 
+    @Column(name = "cancelled_at")
+    private Instant cancelledAt;
+
+    @Column(name = "ended_at")
+    private Instant endedAt;
+
     Concert toDomain() {
         return Concert.builder()
                 .id(id).title(title).artist(artist).description(description)
                 .venue(venue).city(city).country(country)
                 .category(category).status(status).imageUrl(imageUrl)
                 .organizerId(organizerId)
+                .cancelledAt(cancelledAt).endedAt(endedAt)
                 .createdBy(getCreatedBy()).updatedBy(getUpdatedBy())
                 .createdAt(getCreatedAt()).updatedAt(getUpdatedAt())
                 .build();
@@ -79,6 +87,7 @@ public class ConcertJpaEntity extends AuditedEntity {
                 .city(concert.getCity()).country(concert.getCountry())
                 .category(concert.getCategory()).status(concert.getStatus())
                 .imageUrl(concert.getImageUrl()).organizerId(concert.getOrganizerId())
+                .cancelledAt(concert.getCancelledAt()).endedAt(concert.getEndedAt())
                 .build();
     }
 }

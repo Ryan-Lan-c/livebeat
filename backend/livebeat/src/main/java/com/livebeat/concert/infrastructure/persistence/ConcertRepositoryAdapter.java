@@ -1,14 +1,13 @@
 package com.livebeat.concert.infrastructure.persistence;
 
 import com.livebeat.concert.domain.model.Concert;
-import com.livebeat.concert.domain.model.ConcertStatus;
 import com.livebeat.concert.domain.port.ConcertRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,9 +19,6 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 class ConcertRepositoryAdapter implements ConcertRepository {
-
-    private static final List<String> PUBLIC_STATUSES = List.of(
-            ConcertStatus.PUBLISHED.name(), ConcertStatus.ON_SALE.name());
 
     private final ConcertJpaRepository jpa;
 
@@ -41,6 +37,8 @@ class ConcertRepositoryAdapter implements ConcertRepository {
                         existing.setStatus(concert.getStatus());
                         existing.setImageUrl(concert.getImageUrl());
                         existing.setOrganizerId(concert.getOrganizerId());
+                        existing.setCancelledAt(concert.getCancelledAt());
+                        existing.setEndedAt(concert.getEndedAt());
                         return jpa.save(existing).toDomain();
                     })
                     .orElseGet(() -> jpa.save(ConcertJpaEntity.fromDomain(concert)).toDomain());
@@ -54,8 +52,14 @@ class ConcertRepositoryAdapter implements ConcertRepository {
     }
 
     @Override
-    public Page<Concert> searchPublic(String keyword, String category, String city, Pageable pageable) {
-        return jpa.findPublic(PUBLIC_STATUSES, keyword, category, city, pageable)
+    public Page<Concert> searchPublic(String keyword, String category, String city, Instant cutoffTime, Pageable pageable) {
+        return jpa.findPublic(cutoffTime, keyword, category, city, pageable)
+                .map(ConcertJpaEntity::toDomain);
+    }
+
+    @Override
+    public Page<Concert> searchAdmin(String keyword, String category, String city, UUID organizerId, Pageable pageable) {
+        return jpa.findForAdmin(keyword, category, city, organizerId, pageable)
                 .map(ConcertJpaEntity::toDomain);
     }
 

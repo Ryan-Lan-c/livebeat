@@ -27,6 +27,8 @@ public class Concert {
     private final ConcertStatus status;
     private final String imageUrl;
     private final UUID organizerId;
+    private final Instant cancelledAt;
+    private final Instant endedAt;
     private final UUID createdBy;
     private final UUID updatedBy;
     private final Instant createdAt;

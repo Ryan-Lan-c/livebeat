@@ -38,4 +38,13 @@ public record UserPrincipal(
     public boolean isEnabled() {
         return enabled;
     }
+
+    /** 回傳第一個 ROLE_ 開頭的 authority 字串，例如 "ROLE_ORGANIZER" */
+    public String role() {
+        return authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(a -> a.startsWith("ROLE_"))
+                .findFirst()
+                .orElse("");
+    }
 }
