@@ -99,3 +99,8 @@ docker-compose.override.yml
 *.bak
 *.swp
 *.class
+
+# ===========================
+# Claude Code
+# ===========================
+CLAUDE.md
