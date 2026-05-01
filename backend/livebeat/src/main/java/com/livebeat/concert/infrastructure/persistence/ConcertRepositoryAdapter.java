@@ -53,14 +53,22 @@ class ConcertRepositoryAdapter implements ConcertRepository {
 
     @Override
     public Page<Concert> searchPublic(String keyword, String category, String city, Instant cutoffTime, Pageable pageable) {
-        return jpa.findPublic(cutoffTime, keyword, category, city, pageable)
+        String rawKeyword = toRawKeyword(keyword);
+        return jpa.findPublic(cutoffTime, keyword, rawKeyword, category, city, pageable)
                 .map(ConcertJpaEntity::toDomain);
     }
 
     @Override
     public Page<Concert> searchAdmin(String keyword, String category, String city, UUID organizerId, Pageable pageable) {
-        return jpa.findForAdmin(keyword, category, city, organizerId, pageable)
+        String rawKeyword = toRawKeyword(keyword);
+        return jpa.findForAdmin(keyword, rawKeyword, category, city, organizerId, pageable)
                 .map(ConcertJpaEntity::toDomain);
+    }
+
+    /** keyword 格式為 %text%，rawKeyword 去除首尾 % 供 similarity() 使用 */
+    private String toRawKeyword(String keyword) {
+        if (keyword == null) return null;
+        return keyword.substring(1, keyword.length() - 1);
     }
 
     @Override

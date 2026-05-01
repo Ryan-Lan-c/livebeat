@@ -11,47 +11,83 @@ import java.util.UUID;
 
 /**
  * [concert] Concert Spring Data JPA Repository
+ *
+ * 搜尋策略：pg_trgm GIN 索引加速 ILIKE，similarity() 提供相關性排序；
+ * rawKeyword 為不含 % 的原始輸入，供 similarity() 計算使用。
  */
 interface ConcertJpaRepository extends JpaRepository<ConcertJpaEntity, UUID> {
 
-    /**
-     * 公開搜尋：PUBLISHED/ON_SALE 無條件顯示；CANCELLED/ENDED 僅顯示 cutoffTime 之後發生的。
-     * keyword 已由 service 預格式化為 %keyword%（lowercase），null 表示不做關鍵字篩選。
-     */
-    @Query("""
-            SELECT c FROM ConcertJpaEntity c
+    @Query(
+        value = """
+            SELECT * FROM concert.concerts c
             WHERE (
                 c.status IN ('PUBLISHED', 'ON_SALE')
-                OR (c.status = 'CANCELLED' AND c.cancelledAt IS NOT NULL AND c.cancelledAt >= :cutoffTime)
-                OR (c.status = 'ENDED'     AND c.endedAt     IS NOT NULL AND c.endedAt     >= :cutoffTime)
+                OR (c.status = 'CANCELLED' AND c.cancelled_at IS NOT NULL AND c.cancelled_at >= :cutoffTime)
+                OR (c.status = 'ENDED'     AND c.ended_at     IS NOT NULL AND c.ended_at     >= :cutoffTime)
             )
-            AND (:keyword  IS NULL OR LOWER(c.title) LIKE :keyword
-                                   OR LOWER(c.artist) LIKE :keyword
-                                   OR LOWER(c.venue) LIKE :keyword)
+            AND (:keyword  IS NULL OR c.title ILIKE :keyword OR c.artist ILIKE :keyword OR c.venue ILIKE :keyword)
             AND (:category IS NULL OR c.category = :category)
             AND (:city     IS NULL OR c.city = :city)
-            """)
+            ORDER BY
+                CASE WHEN :rawKeyword IS NULL THEN 0
+                     ELSE GREATEST(
+                         similarity(c.title,  :rawKeyword),
+                         similarity(c.artist, :rawKeyword),
+                         similarity(c.venue,  :rawKeyword)
+                     )
+                END DESC,
+                c.created_at DESC
+            """,
+        countQuery = """
+            SELECT COUNT(*) FROM concert.concerts c
+            WHERE (
+                c.status IN ('PUBLISHED', 'ON_SALE')
+                OR (c.status = 'CANCELLED' AND c.cancelled_at IS NOT NULL AND c.cancelled_at >= :cutoffTime)
+                OR (c.status = 'ENDED'     AND c.ended_at     IS NOT NULL AND c.ended_at     >= :cutoffTime)
+            )
+            AND (:keyword  IS NULL OR c.title ILIKE :keyword OR c.artist ILIKE :keyword OR c.venue ILIKE :keyword)
+            AND (:category IS NULL OR c.category = :category)
+            AND (:city     IS NULL OR c.city = :city)
+            """,
+        nativeQuery = true
+    )
     Page<ConcertJpaEntity> findPublic(
             @Param("cutoffTime") Instant cutoffTime,
             @Param("keyword") String keyword,
+            @Param("rawKeyword") String rawKeyword,
             @Param("category") String category,
             @Param("city") String city,
             Pageable pageable);
 
-    /**
-     * 後台搜尋：不過濾狀態；organizerId 不為 null 時只回傳該主辦方的演唱會。
-     */
-    @Query("""
-            SELECT c FROM ConcertJpaEntity c
-            WHERE (:keyword      IS NULL OR LOWER(c.title) LIKE :keyword
-                                          OR LOWER(c.artist) LIKE :keyword
-                                          OR LOWER(c.venue) LIKE :keyword)
-            AND   (:category     IS NULL OR c.category    = :category)
-            AND   (:city         IS NULL OR c.city        = :city)
-            AND   (:organizerId  IS NULL OR c.organizerId = :organizerId)
-            """)
+    @Query(
+        value = """
+            SELECT * FROM concert.concerts c
+            WHERE (:keyword     IS NULL OR c.title ILIKE :keyword OR c.artist ILIKE :keyword OR c.venue ILIKE :keyword)
+            AND   (:category    IS NULL OR c.category     = :category)
+            AND   (:city        IS NULL OR c.city         = :city)
+            AND   (:organizerId IS NULL OR c.organizer_id = CAST(:organizerId AS uuid))
+            ORDER BY
+                CASE WHEN :rawKeyword IS NULL THEN 0
+                     ELSE GREATEST(
+                         similarity(c.title,  :rawKeyword),
+                         similarity(c.artist, :rawKeyword),
+                         similarity(c.venue,  :rawKeyword)
+                     )
+                END DESC,
+                c.created_at DESC
+            """,
+        countQuery = """
+            SELECT COUNT(*) FROM concert.concerts c
+            WHERE (:keyword     IS NULL OR c.title ILIKE :keyword OR c.artist ILIKE :keyword OR c.venue ILIKE :keyword)
+            AND   (:category    IS NULL OR c.category     = :category)
+            AND   (:city        IS NULL OR c.city         = :city)
+            AND   (:organizerId IS NULL OR c.organizer_id = CAST(:organizerId AS uuid))
+            """,
+        nativeQuery = true
+    )
     Page<ConcertJpaEntity> findForAdmin(
             @Param("keyword") String keyword,
+            @Param("rawKeyword") String rawKeyword,
             @Param("category") String category,
             @Param("city") String city,
             @Param("organizerId") UUID organizerId,
