@@ -55,6 +55,7 @@ erDiagram
     USER_PROFILE {
         uuid user_id PK "FK to USER; 一對一"
         string avatar_url
+        text bio "簡介"
         string phone
         date birth_date
         text address
@@ -68,6 +69,9 @@ erDiagram
         string company_tax_id "統一編號"
         string contact_person
         string contact_phone
+        text description "公開介紹"
+        string website
+        string contact_email
         boolean is_blacklisted
         text blacklist_reason "null if not blacklisted"
         timestamptz blacklisted_at
@@ -93,6 +97,8 @@ erDiagram
         string status "DRAFT / PUBLISHED / ON_SALE / CANCELLED / ENDED"
         string image_url
         uuid organizer_id FK "負責此演唱會的 ORGANIZER 或 ADMIN UUID"
+        timestamptz cancelled_at "狀態轉為 CANCELLED 的時間"
+        timestamptz ended_at "狀態轉為 ENDED 的時間"
         timestamptz created_at
         timestamptz updated_at
     }
@@ -107,7 +113,8 @@ erDiagram
         integer max_tickets_per_order "每筆訂單上限張數"
         timestamptz sale_start_at
         timestamptz sale_end_at
-        timestamp created_at
+        timestamptz created_at
+        timestamptz updated_at
     }
 
     TICKET_ZONE {
@@ -119,7 +126,8 @@ erDiagram
         integer total_seats
         integer sold_seats
         integer locked_seats "Redis 鎖定中，尚未付款"
-        timestamp created_at
+        timestamptz created_at
+        timestamptz updated_at
     }
 
     SEAT {
@@ -265,12 +273,13 @@ erDiagram
 
 ### `USER_PROFILE`（使用者個人資料）
 
-> 僅 `USER` 角色使用。`auth.users` 只存認證核心欄位，此表存放購票使用者的個人延伸資料。
+> 所有角色均可使用。`auth.users` 只存認證核心欄位，此表存放使用者的個人延伸資料。
 
 | 欄位 | 說明 |
 |---|---|
 | `user_id` | 同時作為 PK 與 FK，與 `auth.users.id` 一對一對應 |
 | `avatar_url` | 大頭貼圖片 URL（存於 MinIO / S3）|
+| `bio` | 個人簡介（自我介紹文字）|
 | `phone` | 聯絡電話 |
 | `birth_date` | 生日（可用於年齡限制驗證）|
 | `address` | 居住地址（票券郵寄用途，選填）|
@@ -288,6 +297,9 @@ erDiagram
 | `company_tax_id` | 統一編號（用於電子發票開立）|
 | `contact_person` | 主要聯絡人姓名 |
 | `contact_phone` | 聯絡電話 |
+| `description` | 主辦方公開介紹，顯示於前台頁面 |
+| `website` | 官方網站 URL |
+| `contact_email` | 公開聯絡信箱 |
 | `is_blacklisted` | 是否列入黑名單（黑名單主辦方無法新增演唱會）|
 | `blacklist_reason` | 黑名單原因（`is_blacklisted = true` 時填入）|
 | `blacklisted_at` | 列入黑名單的時間 |
@@ -306,6 +318,8 @@ erDiagram
 |---|---|
 | `organizer_id` | 負責此演唱會的使用者 UUID；目前由 ADMIN 建立時填入 ADMIN 自身 UUID，未來 ORGANIZER 自建時填入其 UUID；資料隔離依據：ORGANIZER 只能操作 `organizer_id = 自身 UUID` 的演唱會 |
 | `status` | `DRAFT`：草稿（未公開，僅後台可見）；`PUBLISHED`：已公告（使用者可瀏覽、追蹤，尚未開賣）；`ON_SALE`：開賣中；`CANCELLED`：取消；`ENDED`：已結束 |
+| `cancelled_at` | 狀態轉為 CANCELLED 的時間戳，用於計算公開可見期限（14 天後前台隱藏）|
+| `ended_at` | 狀態轉為 ENDED 的時間戳，用於計算公開可見期限（14 天後前台隱藏）|
 | `category` | 音樂類型，用於前台篩選 |
 
 ---

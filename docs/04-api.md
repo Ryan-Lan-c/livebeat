@@ -35,8 +35,10 @@ OpenAPI JSON：http://localhost:8080/v3/api-docs
 | POST | `/api/v1/auth/logout` | 登出，使 Refresh Token 失效 | USER |
 | GET | `/api/v1/auth/oauth2/google` | 發起 Google OAuth 登入 | Public |
 | GET | `/api/v1/auth/oauth2/apple` | 發起 Apple OAuth 登入 | Public |
-| GET | `/api/v1/auth/me` | 取得當前登入使用者資訊 | USER |
-| PUT | `/api/v1/auth/me` | 更新個人資料（姓名、電話）| USER |
+| GET | `/api/v1/auth/me` | 取得當前登入使用者資訊（含 `profile` 子物件：avatar、bio、phone、birth_date、address）| USER |
+| PUT | `/api/v1/auth/me` | 更新核心資料（username）| USER |
+| GET | `/api/v1/auth/profile` | 取得使用者個人延伸資料（avatar、bio、phone、birth_date、address）| USER |
+| PUT | `/api/v1/auth/profile` | 更新使用者個人延伸資料（null 欄位維持原值）| USER |
 | POST | `/api/v1/auth/line/bind` | 發起 LINE 帳號綁定流程，回傳 LINE Login URL | USER |
 | DELETE | `/api/v1/auth/line/bind` | 解除 LINE 帳號綁定 | USER |
 
@@ -135,10 +137,21 @@ OpenAPI JSON：http://localhost:8080/v3/api-docs
 
 ---
 
+### 主辦方個人資料
+
+| Method | Path | 說明 | 所需角色 |
+|---|---|---|---|
+| GET | `/api/v1/admin/organizer/profile` | 取得主辦方業務資料（公司名稱、統編、聯絡人、黑名單狀態等）| ORGANIZER / ADMIN |
+| PUT | `/api/v1/admin/organizer/profile` | 更新主辦方業務資料（null 欄位維持原值；is_blacklisted 為 ADMIN 專屬欄位，不在此開放）| ORGANIZER / ADMIN |
+
+---
+
 ### 演唱會管理
 
 | Method | Path | 說明 | 所需角色 |
 |---|---|---|---|
+| GET | `/api/v1/admin/concerts` | 演唱會列表（ORGANIZER 僅看自己的；ADMIN 可看全部；支援分頁）| ORGANIZER / ADMIN |
+| GET | `/api/v1/admin/concerts/{id}` | 演唱會詳情（含場次、票區）| ORGANIZER / ADMIN |
 | POST | `/api/v1/admin/concerts` | 新增演唱會 | ORGANIZER / ADMIN |
 | PUT | `/api/v1/admin/concerts/{id}` | 更新演唱會基本資訊 | ORGANIZER / ADMIN |
 | PATCH | `/api/v1/admin/concerts/{id}/status` | 更新演唱會狀態（DRAFT → PUBLISHED → ON_SALE 等）| ORGANIZER / ADMIN |
