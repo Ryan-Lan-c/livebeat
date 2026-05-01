@@ -6,8 +6,10 @@ import com.livebeat.auth.application.dto.UpdateProfileRequest;
 import com.livebeat.auth.domain.model.AuthProvider;
 import com.livebeat.auth.domain.model.RefreshToken;
 import com.livebeat.auth.domain.model.User;
+import com.livebeat.auth.domain.model.UserProfile;
 import com.livebeat.auth.domain.model.UserRole;
 import com.livebeat.auth.domain.port.RefreshTokenRepository;
+import com.livebeat.auth.domain.port.UserProfileRepository;
 import com.livebeat.auth.domain.port.UserRepository;
 import com.livebeat.shared.config.JwtProperties;
 import com.livebeat.shared.exception.ApiException;
@@ -26,6 +28,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -38,6 +41,7 @@ class AuthServiceTest {
 
     @Mock UserRepository userRepository;
     @Mock RefreshTokenRepository refreshTokenRepository;
+    @Mock UserProfileRepository userProfileRepository;
     @Mock JwtService jwtService;
     @Mock PasswordEncoder passwordEncoder;
     @Mock JwtProperties jwtProperties;
@@ -48,7 +52,7 @@ class AuthServiceTest {
 
     @Test
     void register_succeeds_for_new_user() {
-        RegisterRequest req = new RegisterRequest("new@test.com", "newuser", "Password1!");
+        RegisterRequest req = new RegisterRequest("new@test.com", "newuser", "Password1!", null);
         when(userRepository.existsByEmail(any())).thenReturn(false);
         when(userRepository.existsByUsername(any())).thenReturn(false);
         when(passwordEncoder.encode(any())).thenReturn("hashed");
@@ -64,10 +68,29 @@ class AuthServiceTest {
     }
 
     @Test
+    void register_saves_phone_to_profile_when_provided() {
+        RegisterRequest req = new RegisterRequest("new@test.com", "newuser", "Password1!", "0912345678");
+        UUID userId = UUID.randomUUID();
+        User saved = buildUserWithId(userId, "new@test.com", "newuser");
+        when(userRepository.existsByEmail(any())).thenReturn(false);
+        when(userRepository.existsByUsername(any())).thenReturn(false);
+        when(passwordEncoder.encode(any())).thenReturn("hashed");
+        when(userRepository.save(any())).thenReturn(saved);
+        when(jwtService.generateAccessToken(any(), any(), any())).thenReturn("access_token");
+        when(jwtProperties.refreshTokenExpirationSeconds()).thenReturn(604800L);
+        when(refreshTokenRepository.save(any())).thenReturn(buildRefreshToken());
+        when(userProfileRepository.save(any())).thenReturn(UserProfile.builder().userId(userId).phone("0912345678").build());
+
+        authService.register(req);
+
+        verify(userProfileRepository).save(any(UserProfile.class));
+    }
+
+    @Test
     void register_fails_when_email_exists() {
         when(userRepository.existsByEmail("dup@test.com")).thenReturn(true);
 
-        assertThatThrownBy(() -> authService.register(new RegisterRequest("dup@test.com", "user", "Password1!")))
+        assertThatThrownBy(() -> authService.register(new RegisterRequest("dup@test.com", "user", "Password1!", null)))
                 .isInstanceOf(ApiException.class)
                 .extracting("errorCode").isEqualTo(ErrorCode.EMAIL_ALREADY_EXISTS);
     }
@@ -77,7 +100,7 @@ class AuthServiceTest {
         when(userRepository.existsByEmail(any())).thenReturn(false);
         when(userRepository.existsByUsername("taken")).thenReturn(true);
 
-        assertThatThrownBy(() -> authService.register(new RegisterRequest("x@test.com", "taken", "Password1!")))
+        assertThatThrownBy(() -> authService.register(new RegisterRequest("x@test.com", "taken", "Password1!", null)))
                 .isInstanceOf(ApiException.class)
                 .extracting("errorCode").isEqualTo(ErrorCode.USERNAME_ALREADY_EXISTS);
     }

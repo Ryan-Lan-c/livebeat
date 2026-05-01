@@ -1,12 +1,14 @@
 package com.livebeat.auth.api;
 
 import com.livebeat.auth.application.dto.AuthResponse;
-import com.livebeat.auth.application.dto.LoginRequest;
+import com.livebeat.auth.api.dto.LoginRequest;
 import com.livebeat.auth.application.dto.MeResponse;
-import com.livebeat.auth.application.dto.RegisterRequest;
+import com.livebeat.auth.api.dto.RegisterRequest;
 import com.livebeat.auth.application.dto.TokenResponse;
-import com.livebeat.auth.application.dto.UpdateProfileRequest;
+import com.livebeat.auth.api.dto.UpdateMeRequest;
+import com.livebeat.auth.application.dto.UserProfileResponse;
 import com.livebeat.auth.application.service.AuthService;
+import com.livebeat.auth.application.service.ProfileService;
 import com.livebeat.shared.ApiVersion;
 import com.livebeat.shared.config.JwtProperties;
 import com.livebeat.shared.exception.ApiException;
@@ -27,7 +29,7 @@ import java.util.Arrays;
  *
  * 負責：處理使用者註冊、登入、Token 刷新、登出；Refresh Token 透過 HttpOnly Cookie 傳遞；個人資料查詢與更新
  * 對應路由：POST /api/v1/auth/register, /login, /refresh, /logout；GET /PUT /api/v1/auth/me
- * 依賴：AuthService, JwtProperties
+ * 依賴：AuthService, ProfileService, JwtProperties
  */
 @RestController
 @RequestMapping(ApiVersion.V1 + "/auth")
@@ -37,6 +39,7 @@ public class AuthController {
     private static final String COOKIE_PATH = "/api/v1/auth";
 
     private final AuthService authService;
+    private final ProfileService profileService;
     private final JwtProperties jwtProperties;
 
     @PostMapping("/register")
@@ -67,13 +70,15 @@ public class AuthController {
 
     @GetMapping("/me")
     public MeResponse getMe(@AuthenticationPrincipal UserPrincipal principal) {
-        return MeResponse.from(authService.getMe(principal.userId()));
+        UserProfileResponse profile = profileService.getUserProfile(principal.userId());
+        return MeResponse.from(authService.getMe(principal.userId()), profile);
     }
 
     @PutMapping("/me")
     public MeResponse updateMe(@AuthenticationPrincipal UserPrincipal principal,
-                               @Valid @RequestBody UpdateProfileRequest request) {
-        return MeResponse.from(authService.updateMe(principal.userId(), request));
+                               @Valid @RequestBody UpdateMeRequest request) {
+        UserProfileResponse profile = profileService.getUserProfile(principal.userId());
+        return MeResponse.from(authService.updateMe(principal.userId(), request), profile);
     }
 
     @PostMapping("/logout")

@@ -8,7 +8,7 @@ import java.util.UUID;
 /**
  * [auth] 當前登入使用者的個人資料回應 DTO
  *
- * 負責：GET /api/v1/auth/me 與 PUT /api/v1/auth/me 的回應格式
+ * 負責：GET /api/v1/auth/me 與 PUT /api/v1/auth/me 的回應格式；包含 profile 子物件
  */
 public record MeResponse(
         UUID id,
@@ -19,9 +19,10 @@ public record MeResponse(
         boolean enabled,
         UUID organizerId,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        UserProfileResponse profile
 ) {
-    public static MeResponse from(User user) {
+    public static MeResponse from(User user, UserProfileResponse profile) {
         return new MeResponse(
                 user.getId(),
                 user.getEmail(),
@@ -31,7 +32,8 @@ public record MeResponse(
                 user.isEnabled(),
                 user.getOrganizerId(),
                 user.getCreatedAt(),
-                user.getUpdatedAt()
+                user.getUpdatedAt(),
+                profile
         );
     }
 }
