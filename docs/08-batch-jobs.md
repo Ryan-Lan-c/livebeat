@@ -32,7 +32,17 @@
 | 排程 | 每 5 分鐘 |
 | 功能 | 掃描所有 `status = PENDING` 且 `expires_at < NOW()` 的訂單，自動取消並釋放 Redis 庫存 |
 | 步驟 | 1. 查詢過期訂單 → 2. 更新 `status = CANCELLED` → 3. Redis 庫存加回 → 4. 發送 RabbitMQ 事件觸發通知 |
-| 注意 | Redis 庫存釋放必須與 DB 狀態更新保持一致，使用 Lua Script 原子操作 |
+| 注意 | Redis 庫存釋放必須與 DB 狀態更新保持一致，使用 Lua Script 原子操作。庫存權威/回補規格見 [10 — Order 模組設計](./10-order-design.md) |
+
+---
+
+### `InventoryReconcileJob` — Redis↔PG 庫存對帳
+
+| 項目 | 說明 |
+|---|---|
+| 排程 | 每 10 分鐘 |
+| 功能 | 對每個 `ON_SALE` 票區比對 Redis 剩餘與 PG 推導值（`total - sold - 進行中鎖定`），偵測 drift 並告警；安靜窗口可自動校正；順帶刷新 `ticket_zone.locked_seats` 觀測快照 |
+| 設計 | 見 [10 — Order 模組設計 §3-6](./10-order-design.md) |
 
 ---
 

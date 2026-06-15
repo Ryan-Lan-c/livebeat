@@ -340,9 +340,9 @@ erDiagram
 
 | 欄位 | 說明 |
 |---|---|
-| `sold_seats` | 已確定售出的票數（已付款）|
-| `locked_seats` | Redis 中被訂單鎖定但尚未付款的票數；訂單過期後歸零 |
-| 可售剩餘 | `total_seats - sold_seats - locked_seats`（Redis 中計算）|
+| `sold_seats` | 已確定售出的票數（已付款）；售票期間的權威來源（已售）|
+| `locked_seats` | 鎖定中票數的**觀測快照**，由對帳 / 過期 job 刷新；**非權威**，售票決策一律以 Redis 為準（見 [10 — Order 模組設計 §3-7](./10-order-design.md)）|
+| 可售剩餘 | 權威來源為 Redis `zone:remaining:{zoneId}`；不變式 `remaining = total_seats - sold_seats - 進行中鎖定`（見 [10 §3-1](./10-order-design.md)）|
 
 ---
 
