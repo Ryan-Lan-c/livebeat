@@ -25,8 +25,10 @@ public enum ErrorCode {
     ZONE_DELETE_NOT_ALLOWED("CONCERT_006", "Cannot delete a zone that has sold or locked tickets", HttpStatus.UNPROCESSABLE_ENTITY),
     INVALID_STATUS_TRANSITION("CONCERT_007", "Invalid concert status transition", HttpStatus.UNPROCESSABLE_ENTITY),
     INVALID_SESSION_STATUS_TRANSITION("CONCERT_010", "Invalid session status transition", HttpStatus.UNPROCESSABLE_ENTITY),
-    INVALID_FILE_TYPE("CONCERT_008", "Only image files are allowed", HttpStatus.BAD_REQUEST),
-    STORAGE_UPLOAD_FAILED("CONCERT_009", "Failed to upload file to storage", HttpStatus.INTERNAL_SERVER_ERROR);
+    INVALID_FILE_TYPE("CONCERT_008", "Only PNG, JPEG, or WebP images are allowed", HttpStatus.BAD_REQUEST),
+    STORAGE_UPLOAD_FAILED("CONCERT_009", "Failed to upload file to storage", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_SESSION_SCHEDULE("CONCERT_011", "Invalid session schedule: require saleStartAt < saleEndAt <= eventDate and a future event date", HttpStatus.UNPROCESSABLE_ENTITY),
+    ZONE_MODIFICATION_NOT_ALLOWED("CONCERT_012", "Cannot add or modify zones for a cancelled or ended session", HttpStatus.UNPROCESSABLE_ENTITY);
 
     private final String code;
     private final String message;
