@@ -9,8 +9,8 @@ import java.time.LocalDate;
  */
 public record UpdateUserProfileRequest(
         @Size(max = 500) String avatarUrl,
-        String bio,
+        @Size(max = 1000) String bio,
         @Size(max = 20) String phone,
         LocalDate birthDate,
-        String address
+        @Size(max = 500) String address
 ) {}

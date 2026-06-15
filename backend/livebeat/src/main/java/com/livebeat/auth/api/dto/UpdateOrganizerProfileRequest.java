@@ -11,7 +11,7 @@ public record UpdateOrganizerProfileRequest(
         @Size(max = 20) String companyTaxId,
         @Size(max = 100) String contactPerson,
         @Size(max = 20) String contactPhone,
-        String description,
+        @Size(max = 5000) String description,
         @Size(max = 500) String website,
         @Email @Size(max = 255) String contactEmail
 ) {}
