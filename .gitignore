@@ -35,6 +35,10 @@ gradle-app.setting
 *.war
 *.ear
 
+# Gradle wrapper jar 必須納入版控（wrapper 可重現建置；CI 與乾淨 clone 需要它）。
+# 置於 *.jar 之後以覆蓋上面的忽略規則；android 的 wrapper 仍由下方規則排除。
+!**/gradle/wrapper/gradle-wrapper.jar
+
 # 環境變數（機敏資訊，絕對不能 commit）
 .env
 .env.local

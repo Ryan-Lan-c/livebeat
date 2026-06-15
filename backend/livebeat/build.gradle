@@ -83,10 +83,12 @@ dependencies {
 
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
     testImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
     testImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
+    testImplementation "org.testcontainers:postgresql:${testcontainersVersion}"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -98,4 +100,9 @@ dependencyManagement {
 
 tasks.named('test') {
     useJUnitPlatform()
+    // JWT secret 已移除不安全的預設值（見 application.yml / JwtService）。
+    // 測試需要一把 >= 32 bytes 的簽章金鑰：優先用 CI 注入的 JWT_SECRET，
+    // 否則每次執行隨機產生一把，確保 repo 內不落任何固定可簽 token 的密鑰。
+    environment 'JWT_SECRET',
+            System.getenv('JWT_SECRET') ?: (UUID.randomUUID().toString() + UUID.randomUUID().toString())
 }
