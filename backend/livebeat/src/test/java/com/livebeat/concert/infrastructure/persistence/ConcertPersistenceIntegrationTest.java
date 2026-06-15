@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * [concert] 對真實 PostgreSQL 的持久層整合測試（對應 P1-13 / P1-03）
+ * [concert] 對真實 PostgreSQL 的持久層整合測試
  *
  * 涵蓋：
  *   - pg_trgm similarity() 在真實 DB 可用（搜尋 native query 的前提）。

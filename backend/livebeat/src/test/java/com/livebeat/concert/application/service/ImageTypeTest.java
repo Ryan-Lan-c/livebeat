@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * [concert] ImageType magic-bytes 偵測單元測試（對應 P1-04）
+ * [concert] ImageType magic-bytes 偵測單元測試
  *
  * 負責：驗證僅 PNG/JPEG/WebP 由實際檔頭被接受；偽造（如謊報的 SVG）與空內容被拒。
  */

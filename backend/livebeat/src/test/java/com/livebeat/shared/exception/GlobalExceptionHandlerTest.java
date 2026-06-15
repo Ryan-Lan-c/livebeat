@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * [shared] GlobalExceptionHandler 單元測試（對應 P2-14）
+ * [shared] GlobalExceptionHandler 單元測試
  *
  * 負責：驗證各例外映射到正確的 HTTP 狀態與錯誤碼；未預期例外不洩漏內部細節。
  */

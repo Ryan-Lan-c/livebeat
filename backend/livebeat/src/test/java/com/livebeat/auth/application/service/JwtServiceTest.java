@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * [auth] JwtService 單元測試
  *
- * 負責：驗證啟動時的 secret 強度檢查（fail-fast）、token 簽發/驗證 round-trip、偽造金鑰 token 被拒（對應 P0-02）
+ * 負責：驗證啟動時的 secret 強度檢查（fail-fast）、token 簽發/驗證 round-trip、偽造金鑰 token 被拒
  */
 class JwtServiceTest {
 

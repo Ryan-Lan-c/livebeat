@@ -140,7 +140,7 @@ public class ConcertService {
             throw new ApiException(ErrorCode.CONCERT_DELETE_NOT_ALLOWED);
         }
         concertRepository.deleteById(concertId);
-        // 清除 MinIO 中的封面圖，避免演唱會刪除後留下孤兒檔（接上原本未被呼叫的 StoragePort.remove）
+        // 清除 MinIO 中的封面圖，避免演唱會刪除後留下孤兒檔
         if (concert.getImageUrl() != null) {
             try {
                 storagePort.remove(coverKey(concertId));

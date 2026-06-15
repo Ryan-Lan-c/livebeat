@@ -17,7 +17,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * [auth] Web 層授權邊界整合測試（對應 P1-13 / P2-20）
+ * [auth] Web 層授權邊界整合測試
  *
  * 以真實 HTTP（RANDOM_PORT + JDK HttpClient）驗證 URL matcher 的授權不變量：
  *   - 公開端點免認證可達；

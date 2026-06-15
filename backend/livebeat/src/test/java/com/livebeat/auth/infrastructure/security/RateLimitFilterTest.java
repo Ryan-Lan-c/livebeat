@@ -17,7 +17,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
- * [auth] RateLimitFilter 單元測試（對應 P1-05）
+ * [auth] RateLimitFilter 單元測試
  *
  * 驗證：認證端點超過 per-IP 門檻回 429 並中止鏈、門檻內放行、非目標路徑/GET 不限流、
  *       Redis 故障時 fail-open（放行而非擋住登入）。

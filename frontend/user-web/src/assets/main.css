@@ -1,4 +1,4 @@
-/* 字體改用系統字體棧（含繁中），移除 render-blocking 的外部 Google Fonts、避免外部相依與隱私顧慮。
+/* 使用系統字體棧（含繁中），避免 render-blocking 外部相依與隱私顧慮。
    未來若要使用 Geist 等品牌字體，請改為自託管（webfont 放入 public/ 或以 @font-face 引入）。 */
 
 @import "tailwindcss";

@@ -13,7 +13,7 @@ import java.net.http.HttpResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * [auth] 安全標頭與 CORS 整合測試（對應 P1-06）
+ * [auth] 安全標頭與 CORS 整合測試
  *
  * 以真實 HTTP（RANDOM_PORT + JDK HttpClient）驗證回應標頭與 CORS 白名單行為。
  * 註：HSTS 由 Spring Security 僅對 HTTPS 請求輸出，純 HTTP 測試環境不驗證，已於 SecurityConfig 設定。
