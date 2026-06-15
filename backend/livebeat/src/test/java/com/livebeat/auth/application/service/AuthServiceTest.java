@@ -1,8 +1,8 @@
 package com.livebeat.auth.application.service;
 
-import com.livebeat.auth.application.dto.LoginRequest;
-import com.livebeat.auth.application.dto.RegisterRequest;
-import com.livebeat.auth.application.dto.UpdateProfileRequest;
+import com.livebeat.auth.api.dto.LoginRequest;
+import com.livebeat.auth.api.dto.RegisterRequest;
+import com.livebeat.auth.api.dto.UpdateMeRequest;
 import com.livebeat.auth.domain.model.AuthProvider;
 import com.livebeat.auth.domain.model.RefreshToken;
 import com.livebeat.auth.domain.model.User;
@@ -166,7 +166,7 @@ class AuthServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(userRepository.existsByUsernameAndIdNot("takenname", userId)).thenReturn(true);
 
-        assertThatThrownBy(() -> authService.updateMe(userId, new UpdateProfileRequest("takenname")))
+        assertThatThrownBy(() -> authService.updateMe(userId, new UpdateMeRequest("takenname")))
                 .isInstanceOf(ApiException.class)
                 .extracting("errorCode").isEqualTo(ErrorCode.USERNAME_ALREADY_EXISTS);
     }
@@ -178,7 +178,7 @@ class AuthServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenReturn(user);
 
-        var result = authService.updateMe(userId, new UpdateProfileRequest("samename"));
+        var result = authService.updateMe(userId, new UpdateMeRequest("samename"));
 
         assertThat(result.getUsername()).isEqualTo("samename");
     }
