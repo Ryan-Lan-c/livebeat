@@ -22,7 +22,7 @@ gantt
 
     section Phase 1 核心骨架
     Docker Compose 本機環境搭建          :p1a, 2026-05-01, 5d
-    Auth Module（JWT + Google/Apple OAuth）:p1b, after p1a, 14d
+    Auth Module（JWT）                      :p1b, after p1a, 14d
     Concert + Session Module（CRUD + PG FTS）:p1c, after p1a, 21d
     使用者前台 Web（列表 + 詳情 + 場次）  :p1d, after p1b, 21d
 
@@ -32,7 +32,7 @@ gantt
     Payment Module（綠界 ECPay）           :p2c, after p2a, 14d
     電子發票（ECPay Invoice API）           :p2d, after p2c, 7d
     動態 QR Code（HMAC）                   :p2e, after p2c, 7d
-    LINE Bot 帳號綁定 + 通知               :p2f, after p2e, 14d
+    LINE Bot 帳號綁定 + 通知 / Google & Apple OAuth :p2f, after p2e, 14d
     使用者前台完整訂票流程                 :p2g, after p2a, 14d
     Spring Batch 基本 Job（訂單過期 / 座位釋放）:p2h, after p2a, 7d
 
@@ -58,7 +58,7 @@ gantt
 ### Phase 1 — 核心骨架（目標：可以登入 + 瀏覽）
 
 - 本機 Docker Compose 環境：PostgreSQL、Redis、RabbitMQ、MinIO、Nginx、Mailpit
-- Auth module：Email 帳號系統、JWT、Google OAuth、Apple OAuth
+- Auth module：Email 帳號系統、JWT（Google / Apple OAuth 延後至 Phase 2 LINE Bot 階段）
 - Concert module：演唱會 CRUD、場次管理、PostgreSQL 全文搜尋
 - 使用者前台：列表頁、詳情頁、場次選擇、登入 / 註冊
 
@@ -73,6 +73,7 @@ gantt
 - Payment module：綠界 ECPay 串接、電子發票
 - 動態 QR Code：HMAC，每 60 秒刷新
 - LINE Bot：帳號綁定、訂票 / 付款通知
+- Google / Apple OAuth：第三方帳號登入（與 LINE 帳號綁定同期實作）
 - Spring Batch：`OrderExpiryJob`、`SeatLockReleaseJob`
 
 完成標誌：使用者可以完成完整購票流程，收到 Email / LINE 確認，持 QR Code 可驗票

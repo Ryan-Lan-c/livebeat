@@ -31,7 +31,7 @@ LiveBeat 是一套類似 KKTIX 的票務平台，票務公司員工透過後台�
 | 後端 | Java 25 · Spring Boot 4 · Spring Modulith · Spring Security |
 | 資料層 | PostgreSQL 16 · Redis 7 · Flyway |
 | 訊息佇列 | RabbitMQ |
-| 前台 Web | Vue 3 · Element Plus · TanStack Query · Pinia |
+| 前台 Web | Vue 3 · shadcn-vue · TanStack Query · Pinia |
 | 後台 Web | Vue 3 · Element Plus · ECharts |
 | 行動 App | Flutter 3（Android + iOS）|
 | 金流 | ECPay · NewebPay · Stripe |

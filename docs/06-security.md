@@ -71,7 +71,7 @@ sequenceDiagram
 | Provider | 適用平台 | 備註 |
 |---|---|---|
 | **Google** | Web + Flutter App | |
-| **Apple** | Flutter App（iOS）+ Web | App Store 規定：有其他第三方登入必須支援 Apple Sign In |
+| **Facebook** | Web + Flutter App | |
 
 ### 帳號關聯邏輯
 
@@ -82,7 +82,7 @@ sequenceDiagram
 2b. 找不到 → 自動建立新帳號（填入 Google 提供的 email / full_name）
 ```
 
-> 同一個 Email 用不同方式登入（Email / Google / Apple）會關聯到同一個帳號。
+> 同一個 Email 用不同方式登入（Email / Google / Facebook）會關聯到同一個帳號。
 
 ---
 

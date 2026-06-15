@@ -1,7 +1,7 @@
 # LiveBeat — 專案總覽
 
-> 最後更新：2026-04-26（UTC+8）
-> 狀態：**Phase 1 進行中 — Auth Module 完成**
+> 最後更新：2026-06-15（UTC+8）
+> 狀態：**Phase 1 進行中 — Auth / Concert Module 後端已實作，前台 scaffold 建立中**
 
 ---
 
@@ -41,11 +41,11 @@
 | API 初稿 | ✅ 完成（見 [04 — API 設計](docs/04-api.md)）|
 | 前台 UI 參考 | ✅ LiveBeat_Vue3 Demo 版 |
 | Docker Compose 本機環境 | ✅ 完成 |
-| Auth Module | ✅ 完成（JWT register/login/refresh/logout）|
-| Concert Module | ⏳ 尚未開始 |
+| Auth Module | ✅ 後端已實作（JWT register/login/refresh/logout、profile）|
+| Concert Module | ✅ 後端已實作（演唱會 / 場次 / 票區 CRUD、pg_trgm 搜尋；前後台 Controller）|
 | 後台 Admin Module | ⏳ 尚未開始 |
-| 前台實作 | ⏳ 尚未開始 |
-| 後台實作 | ⏳ 尚未開始 |
+| 前台實作（user-web）| 🚧 Scaffold 已建立（Vue 3 + shadcn-vue + TailwindCSS），主要 view（列表 / 詳情 / 登入 / 註冊）仍為骨架 |
+| 後台實作（admin-web）| ⏳ 尚未開始 |
 | Flutter App | ⏳ 尚未開始 |
 
 ---

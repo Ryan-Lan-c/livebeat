@@ -41,8 +41,8 @@
 |---|---|---|
 | 資料庫 | PostgreSQL 16 | 各模組獨立 Schema，Flyway 管理版本 |
 | 快取 / 分散鎖 | Redis 7+ | 庫存扣減、分散式鎖、Session |
-| 搜尋（Phase 1~2）| PostgreSQL `pg_trgm` | `ILIKE` + GIN index 加速，無需安裝額外套件；預留 `SearchService` interface，未來可升級至 `zhparser` FTS（中文斷詞）或 Elasticsearch |
-| 搜尋（Phase 3+）| Elasticsearch | 複雜 Faceted Search，切換時只改 infrastructure 層 |
+| 搜尋（Phase 1~2）| PostgreSQL `pg_trgm` | `ILIKE` + `similarity` 排序，無需安裝額外套件；目前查詢直接寫在 `ConcertJpaRepository` native query，未抽象成獨立 search 介面，未來可升級至 `zhparser` FTS（中文斷詞）或 Elasticsearch |
+| 搜尋（Phase 3+）| Elasticsearch | 複雜 Faceted Search；因搜尋目前耦合於 JPA repository，切換時需重構此層（非僅換一個實作） |
 | 物件儲存 | AWS S3 / MinIO（dev）| 圖片、票券 PDF、座位圖 SVG |
 
 ## 訊息 & 排程
@@ -88,7 +88,7 @@
 | 項目 | 選用 |
 |---|---|
 | 框架 | Vue 3 (Composition API) |
-| UI Library | Element Plus |
+| UI Library | shadcn-vue（基於 Reka UI，Headless + TailwindCSS；Element Plus 樣式制式不適合消費者前台） |
 | 狀態管理 | Pinia + Pinia Persist |
 | HTTP | Axios（Token Refresh Interceptor）+ TanStack Query |
 | WebSocket | `@stomp/stompjs` + `sockjs-client` |
@@ -187,7 +187,7 @@
 ```mermaid
 graph TB
     subgraph Clients["前端 Clients"]
-        VueWeb["使用者 Web\nVue3 + Element Plus\nSTOMP WebSocket"]
+        VueWeb["使用者 Web\nVue3 + shadcn-vue\nSTOMP WebSocket"]
         AdminWeb["後台管理 Web\nVue3 + Element Plus + ECharts"]
         FlutterApp["Flutter App\nAndroid / iOS\nRiverpod + FCM"]
     end

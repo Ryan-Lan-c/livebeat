@@ -42,17 +42,22 @@ concert/
 │   ├── ConcertSession.java
 │   └── ConcertRepository.java   ← Port（interface，由 infrastructure 實作）
 │
-└── infrastructure/               ← Adapter Out（輸出端）
-    ├── ConcertJpaRepository.java ← JPA 實作 ConcertRepository
-    ├── ConcertSearchAdapter.java ← Phase1: PG FTS；Phase3+: ES，切換只改這裡
-    └── entity/                   ← JPA Entity（與 domain Entity 分開）
+└── infrastructure/                  ← Adapter Out（輸出端）
+    └── persistence/
+        ├── ConcertJpaRepository.java     ← JPA 實作 ConcertRepository；搜尋目前以 pg_trgm（ILIKE + similarity）native query 寫在此
+        ├── ConcertRepositoryAdapter.java ← 實作 domain port，呼叫上方 JPA 方法
+        └── entity/                       ← JPA Entity（與 domain Entity 分開）
 ```
 
 **換 DB（如 PostgreSQL → MongoDB）：**
 只改 `infrastructure/`，`domain/` 和 `application/` 完全不動。
 
-**換搜尋引擎（PG FTS → Elasticsearch）：**
-`SearchService` interface 定義在 `application/`，只需換掉 `infrastructure/` 的實作並更改 Spring `@Bean`，上層邏輯不動。
+**換搜尋引擎（pg_trgm → Elasticsearch）：**
+目前現況：**搜尋並未抽象成獨立的 `SearchService`／`ConcertSearchAdapter`**，而是直接耦合在
+`infrastructure/persistence/ConcertJpaRepository.java` 的 pg_trgm（`ILIKE` + `similarity` 排序）native query，
+經 `ConcertRepositoryAdapter` 走 `ConcertRepository` port 呼叫。
+因此若未來要換成 Elasticsearch，**並非「只改一層」**，而需要先把搜尋邏輯從 JPA repository 抽出（例如獨立的 search port + adapter），
+這是一次重構，而不是替換現成的實作。
 
 ---
 
