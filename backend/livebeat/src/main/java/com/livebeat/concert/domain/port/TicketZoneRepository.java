@@ -13,6 +13,8 @@ public interface TicketZoneRepository {
     TicketZone save(TicketZone zone);
     Optional<TicketZone> findById(UUID id);
     List<TicketZone> findBySessionId(UUID sessionId);
+    /** 一次載入多個場次的票區，供詳情查詢批次取用、避免 N+1。 */
+    List<TicketZone> findBySessionIdIn(List<UUID> sessionIds);
     void deleteById(UUID id);
     boolean hasActiveSales(UUID zoneId);
 }

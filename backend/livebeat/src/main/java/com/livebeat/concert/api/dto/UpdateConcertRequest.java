@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 public record UpdateConcertRequest(
         @Size(max = 255) String title,
         @Size(max = 255) String artist,
-        String description,
+        @Size(max = 5000) String description,
         @Size(max = 255) String venue,
         @Size(max = 100) String city,
         @Size(max = 100) String country,

@@ -15,7 +15,7 @@ import java.util.UUID;
 public record CreateConcertRequest(
         @NotBlank @Size(max = 255) String title,
         @NotBlank @Size(max = 255) String artist,
-        String description,
+        @Size(max = 5000) String description,
         @NotBlank @Size(max = 255) String venue,
         @NotBlank @Size(max = 100) String city,
         @Size(max = 100) String country,

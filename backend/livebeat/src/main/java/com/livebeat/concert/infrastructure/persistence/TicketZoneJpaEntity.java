@@ -47,6 +47,14 @@ public class TicketZoneJpaEntity extends TimestampedEntity {
     @Column(name = "locked_seats", nullable = false)
     private int lockedSeats;
 
+    /**
+     * 樂觀鎖版本：並發更新庫存（sold/locked）時，後提交者會收到 OptimisticLockException，
+     * 防止 read-modify-write 的 lost-update 造成超賣。新實體以 0 起算。
+     */
+    @Version
+    @Column(nullable = false)
+    private long version;
+
     TicketZone toDomain() {
         return TicketZone.builder()
                 .id(id).sessionId(sessionId).zoneCode(zoneCode).zoneName(zoneName)

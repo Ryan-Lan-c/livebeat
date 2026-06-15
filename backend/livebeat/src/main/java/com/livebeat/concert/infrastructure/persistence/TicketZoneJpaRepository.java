@@ -14,6 +14,8 @@ interface TicketZoneJpaRepository extends JpaRepository<TicketZoneJpaEntity, UUI
 
     List<TicketZoneJpaEntity> findBySessionIdOrderByZoneCodeAsc(UUID sessionId);
 
+    List<TicketZoneJpaEntity> findBySessionIdInOrderBySessionIdAscZoneCodeAsc(List<UUID> sessionIds);
+
     @Query("SELECT CASE WHEN (z.soldSeats > 0 OR z.lockedSeats > 0) THEN TRUE ELSE FALSE END " +
            "FROM TicketZoneJpaEntity z WHERE z.id = :id")
     boolean hasActiveSales(@Param("id") UUID id);

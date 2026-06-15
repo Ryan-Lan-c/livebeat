@@ -47,6 +47,15 @@ class TicketZoneRepositoryAdapter implements TicketZoneRepository {
     }
 
     @Override
+    public List<TicketZone> findBySessionIdIn(List<UUID> sessionIds) {
+        if (sessionIds.isEmpty()) {
+            return List.of();
+        }
+        return jpa.findBySessionIdInOrderBySessionIdAscZoneCodeAsc(sessionIds).stream()
+                .map(TicketZoneJpaEntity::toDomain).toList();
+    }
+
+    @Override
     public void deleteById(UUID id) {
         jpa.deleteById(id);
     }

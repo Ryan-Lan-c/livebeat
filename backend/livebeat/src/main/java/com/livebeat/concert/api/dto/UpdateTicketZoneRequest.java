@@ -1,5 +1,6 @@
 package com.livebeat.concert.api.dto;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
@@ -9,5 +10,5 @@ import jakarta.validation.constraints.Size;
 public record UpdateTicketZoneRequest(
         @Size(max = 100) String zoneName,
         @Min(0) Integer price,
-        @Min(1) Integer totalSeats
+        @Min(1) @Max(200_000) Integer totalSeats
 ) {}
