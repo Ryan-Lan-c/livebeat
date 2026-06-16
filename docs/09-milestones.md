@@ -17,39 +17,18 @@
 
 ```mermaid
 gantt
-    title 建議開發里程碑
-    dateFormat  YYYY-MM-DD
-
-    section Phase 1 核心骨架
-    Docker Compose 本機環境搭建          :p1a, 2026-05-01, 5d
-    Auth Module（JWT）                      :p1b, after p1a, 14d
-    Concert + Session Module（CRUD + PG FTS）:p1c, after p1a, 21d
-    使用者前台 Web（列表 + 詳情 + 場次）  :p1d, after p1b, 21d
-
-    section Phase 2 訂票 & 金流
-    Order Module（Redis 庫存鎖 + Quartz）  :p2a, after p1c, 14d
-    WebSocket 即時票況                     :p2b, after p2a, 7d
-    Payment Module（綠界 ECPay）           :p2c, after p2a, 14d
-    電子發票（ECPay Invoice API）           :p2d, after p2c, 7d
-    動態 QR Code（HMAC）                   :p2e, after p2c, 7d
-    LINE Bot 帳號綁定 + 通知 / Google & Apple OAuth :p2f, after p2e, 14d
-    使用者前台完整訂票流程                 :p2g, after p2a, 14d
-    Spring Batch 基本 Job（訂單過期 / 座位釋放）:p2h, after p2a, 7d
-
-    section Phase 3 後台 & App
-    Admin Module（報表 + Spring Batch 完整 Job）:p3a, after p2a, 21d
-    後台管理 Web                            :p3b, after p3a, 21d
-    Flutter App MVP（購票 + 票券 + QR）    :p3c, after p2e, 30d
-    對號入座座位系統（格子版）              :p3d, after p3b, 14d
-
-    section Phase 4 強化
-    Stripe 全球金流                         :p4a, after p2c, 14d
-    SVG 熱區座位圖（Fabric.js）             :p4b, after p3d, 21d
-    Virtual Waiting Room 排隊室            :p4c, after p4b, 21d
-    JMeter 壓力測試 & 效能調優             :p4d, after p4c, 14d
-    Kafka（拆 Microservices 時）           :p4e, after p4d, 14d
-    Elasticsearch 搜尋強化                 :p4f, after p4e, 14d
+    title 階段總覽（active = 進行中）
+    dateFormat YYYY-MM-DD
+    axisFormat %Y-%m
+    section 里程碑
+    Phase 1 核心骨架     :active, ph1, 2026-05-01, 50d
+    Phase 2 訂票 & 金流  :active, ph2, after ph1, 60d
+    Phase 3 後台 & App   :        ph3, after ph2, 75d
+    Phase 4 強化         :        ph4, after ph3, 90d
 ```
+
+> Phase 1 後端完成、前台主線進行中；Phase 2 後端 order 切片已完成，前台訂票 UI 與真實金流待接。
+> 上圖為順序化概覽（實務上各 Phase 會部分並行）；各階段細項與狀態見下方各表。
 
 ---
 
@@ -57,10 +36,12 @@ gantt
 
 ### Phase 1 — 核心骨架（目標：可以登入 + 瀏覽）
 
-- 本機 Docker Compose 環境：PostgreSQL、Redis、RabbitMQ、MinIO、Nginx、Mailpit
-- Auth module：Email 帳號系統、JWT（Google / Apple OAuth 延後至 Phase 2 LINE Bot 階段）
-- Concert module：演唱會 CRUD、場次管理、PostgreSQL 全文搜尋
-- 使用者前台：列表頁、詳情頁、場次選擇、登入 / 註冊
+| 任務 | 狀態 | 估時 |
+|---|---|---|
+| Docker Compose 本機環境（PG / Redis / RabbitMQ / MinIO / Nginx / Mailpit）| ✅ | 5d |
+| Auth Module（Email 帳號、JWT；OAuth 延後至 Phase 2）| ✅ | 14d |
+| Concert Module（演唱會 / 場次 CRUD、PG 全文搜尋）| ✅ | 21d |
+| 使用者前台（列表 / 詳情 / 場次、登入 / 註冊）| 🚧 | 21d |
 
 完成標誌：使用者可以登入、瀏覽演唱會、看到場次資訊
 
@@ -68,13 +49,18 @@ gantt
 
 ### Phase 2 — 訂票 & 金流（目標：可以真的買票）
 
-- Order module：Redis Lua 原子庫存扣減、訂單 10 分鐘鎖、Quartz Job
-- WebSocket：即時票況廣播
-- Payment module：綠界 ECPay 串接、電子發票
-- 動態 QR Code：HMAC，每 60 秒刷新
-- LINE Bot：帳號綁定、訂票 / 付款通知
-- Google / Apple OAuth：第三方帳號登入（與 LINE 帳號綁定同期實作）
-- Spring Batch：`OrderExpiryJob`、`SeatLockReleaseJob`
+| 任務 | 狀態 | 估時 |
+|---|---|---|
+| Order Module（Redis Lua 原子扣減、10 分鐘鎖、同步下單）| ✅ | 14d |
+| Spring Batch（`OrderExpiryJob` 過期回補、`InventoryReconcileJob` 對帳）| ✅ | 7d |
+| 使用者前台完整訂票流程（接後端切片）| ⏳ | 14d |
+| WebSocket 即時票況廣播 | ⏳ | 7d |
+| Payment Module（綠界 ECPay 串接）| ⏳ | 14d |
+| 電子發票（ECPay Invoice API）| ⏳ | 7d |
+| 動態 QR Code（HMAC，每 60 秒刷新）| ⏳ | 7d |
+| LINE Bot（綁定 / 通知）、Google / Apple OAuth | ⏳ | 14d |
+
+> order 後端切片含 sandbox 付款 + 出票（見 [docs/10](./10-order-design.md)）；真實金流與電子發票尚未串接。
 
 完成標誌：使用者可以完成完整購票流程，收到 Email / LINE 確認，持 QR Code 可驗票
 
@@ -82,10 +68,12 @@ gantt
 
 ### Phase 3 — 後台 & App（目標：系統可以被管理）
 
-- Admin module：統計、Spring Batch 全部 Job
-- 後台管理 Web：演唱會管理、訂單管理、財報、驗票介面
-- Flutter App：完整購票、動態 QR Code、Staff 驗票模式
-- 對號入座：座位格子版
+| 任務 | 狀態 | 估時 |
+|---|---|---|
+| Admin Module（統計報表、Spring Batch 全部 Job）| ⏳ | 21d |
+| 後台管理 Web（演唱會 / 訂單 / 財報 / 驗票）| ⏳ | 21d |
+| Flutter App（購票、動態 QR、Staff 驗票）| ⏳ | 30d |
+| 對號入座座位系統（格子版）| ⏳ | 14d |
 
 完成標誌：後台員工可以管理演唱會、查看報表；工作人員可以用 App 驗票
 
@@ -93,13 +81,14 @@ gantt
 
 ### Phase 4 — 強化（目標：全球可用、極高並發）
 
-- Stripe 全球金流
-- SVG 熱區座位圖
-- Virtual Waiting Room（排隊室）
-- JMeter 壓力測試（模擬萬人搶票）
-- 效能調優（根據壓測結果）
-- Kafka（視是否需要拆 Microservices）
-- Elasticsearch（視搜尋需求）
+| 任務 | 狀態 | 估時 |
+|---|---|---|
+| Stripe 全球金流 | ⏳ | 14d |
+| SVG 熱區座位圖（Fabric.js）| ⏳ | 21d |
+| Virtual Waiting Room 排隊室 | ⏳ | 21d |
+| JMeter 壓力測試（模擬萬人搶票）+ 效能調優 | ⏳ | 28d |
+| Kafka（視是否拆 Microservices）| ⏳ | 14d |
+| Elasticsearch 搜尋強化 | ⏳ | 14d |
 
 ---
 

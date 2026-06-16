@@ -1,7 +1,7 @@
 # LiveBeat — 專案總覽
 
-> 最後更新：2026-06-15（UTC+8）
-> 狀態：**Phase 1 進行中 — Auth / Concert Module 後端已實作，前台 scaffold 建立中**
+> 最後更新：2026-06-16（UTC+8）
+> 狀態：**Phase 2 進行中 — Auth / Concert / Order（購票垂直切片）後端已實作；前台主線 view 建立中**
 
 ---
 
@@ -32,21 +32,31 @@
 
 ## 當前進度
 
+> 本表為「一眼看進度」的單一來源（done / 進行中 / 未開始）。
+
 | 項目 | 狀態 |
 |---|---|
-| 商業模式 | ✅ 票務公司，員工後台管理演唱會 |
-| 架構策略 | ✅ Hexagonal Modular Monolith → 按需拆 Microservices |
-| 技術選型 | ✅ 確認完成（見 [01 — 技術選型](docs/01-tech-stack.md)）|
-| 資料模型初稿 | ✅ 完成（見 [03 — 資料模型](docs/03-data-model.md)）|
-| API 初稿 | ✅ 完成（見 [04 — API 設計](docs/04-api.md)）|
-| 前台 UI 參考 | ✅ LiveBeat_Vue3 Demo 版 |
+| 商業模式 / 架構策略 / 技術選型 | ✅ 確認完成 |
+| 資料模型 / API 初稿 | ✅ 完成 |
 | Docker Compose 本機環境 | ✅ 完成 |
-| Auth Module | ✅ 後端已實作（JWT register/login/refresh/logout、profile）|
-| Concert Module | ✅ 後端已實作（演唱會 / 場次 / 票區 CRUD、pg_trgm 搜尋；前後台 Controller）|
-| 後台 Admin Module | ⏳ 尚未開始 |
-| 前台實作（user-web）| 🚧 Scaffold 已建立（Vue 3 + shadcn-vue + TailwindCSS），主要 view（列表 / 詳情 / 登入 / 註冊）仍為骨架 |
-| 後台實作（admin-web）| ⏳ 尚未開始 |
+| Auth Module（後端）| ✅ JWT register / login / refresh / logout、profile |
+| Concert Module（後端）| ✅ 演唱會 / 場次 / 票區 CRUD、pg_trgm 搜尋、前後台 Controller |
+| **Order Module（後端購票垂直切片）** | ✅ 同步下單防超賣（Redis Lua）、開賣 warm-up、過期回補、Redis 故障復原 + 對帳、sandbox 付款 + 出票（見 [docs/10](docs/10-order-design.md)）|
+| 程式碼健康度（P0–P3 修正輪）| ✅ 安全 / CI / 測試 / 例外 / migration 等 19 項已修 |
+| 規劃決策 D1–D4 | ✅ 已拍板（台灣優先、單機誠實容量、NFR 初始值）|
+| 前台實作（user-web）| 🚧 auth flow、型別契約、主線 view（瀏覽）已建立；完整訂票 / 付款 UI 未接 |
+| 真實金流 + 電子發票（payment 模組）| ⏳ 尚未開始（order 已有 sandbox 付款佔位）|
+| 後台 Admin Module + admin-web | ⏳ 尚未開始 |
 | Flutter App | ⏳ 尚未開始 |
+
+### 下一步（待拍板）
+
+order 購票切片已端到端打通並以真實 Redis + PG 整合測試驗證；接下來可選：
+
+1. **真實金流串接**（綠界 ECPay → 電子發票）—— 銜接目前的 sandbox 付款。
+2. **Admin 模組 + 後台 Web** —— 讓票務公司能管理演唱會 / 訂單 / 報表。
+3. **前台訂票 / 付款 UI** —— 把後端切片接到 user-web。
+4. 規劃決策 **D5–D8**（過度設計、PII 合規、版本風險、GTM）。
 
 ---
 
