@@ -41,7 +41,9 @@ public class OrderItemJpaEntity {
     private int subtotal;
 
     OrderItem toDomain() {
-        return OrderItem.of(zoneId, quantity, unitPrice);
+        return OrderItem.builder()
+                .id(id).zoneId(zoneId).quantity(quantity).unitPrice(unitPrice)
+                .build();
     }
 
     static OrderItemJpaEntity fromDomain(OrderItem item, UUID orderId) {

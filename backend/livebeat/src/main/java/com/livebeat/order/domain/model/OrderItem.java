@@ -13,6 +13,7 @@ import java.util.UUID;
 @Getter
 @Builder
 public class OrderItem {
+    private final UUID id;
     private final UUID zoneId;
     private final int quantity;
     private final int unitPrice;

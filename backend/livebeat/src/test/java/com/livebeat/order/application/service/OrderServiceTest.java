@@ -1,21 +1,27 @@
 package com.livebeat.order.application.service;
 
 import com.livebeat.concert.ConcertQueryApi;
+import com.livebeat.concert.ConcertSaleApi;
 import com.livebeat.concert.OrderableZone;
 import com.livebeat.order.api.dto.CreateOrderRequest;
 import com.livebeat.order.application.dto.OrderResponse;
 import com.livebeat.order.domain.model.Order;
 import com.livebeat.order.domain.model.OrderItem;
+import com.livebeat.order.domain.model.OrderStatus;
+import com.livebeat.order.domain.model.Ticket;
 import com.livebeat.order.domain.port.InventoryPort;
 import com.livebeat.order.domain.port.OrderRepository;
+import com.livebeat.order.domain.port.TicketRepository;
 import com.livebeat.shared.exception.ApiException;
 import com.livebeat.shared.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,6 +45,8 @@ class OrderServiceTest {
     @Mock OrderRepository orderRepository;
     @Mock InventoryPort inventory;
     @Mock ConcertQueryApi concertQuery;
+    @Mock ConcertSaleApi concertSale;
+    @Mock TicketRepository ticketRepository;
     @InjectMocks OrderService orderService;
 
     private final UUID userId = UUID.randomUUID();
@@ -144,5 +152,41 @@ class OrderServiceTest {
         assertThat(response.orderNo()).isEqualTo("ORD-EXISTING");
         verify(concertQuery, never()).findOrderableZone(any(), any());
         verify(inventory, never()).tryReserve(any(), anyInt());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void payOrder_confirms_sale_and_issues_tickets() {
+        UUID orderId = UUID.randomUUID();
+        UUID itemId = UUID.randomUUID();
+        OrderItem item = OrderItem.builder().id(itemId).zoneId(zoneId).quantity(2).unitPrice(1000).build();
+        Order order = Order.create(userId, sessionId, "ORD-1", "TWD", null,
+                Instant.now().plusSeconds(600), List.of(item)).withId(orderId);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+        OrderResponse response = orderService.payOrder(orderId, userId);
+
+        assertThat(response.status()).isEqualTo("PAID");
+        verify(concertSale).confirmSale(zoneId, 2);
+        verify(orderRepository).updateStatus(orderId, OrderStatus.PAID);
+        ArgumentCaptor<List<Ticket>> captor = ArgumentCaptor.forClass(List.class);
+        verify(ticketRepository).saveAll(captor.capture());
+        assertThat(captor.getValue()).hasSize(2);
+    }
+
+    @Test
+    void payOrder_rejects_non_pending_order() {
+        UUID orderId = UUID.randomUUID();
+        Order paid = Order.create(userId, sessionId, "ORD-1", "TWD", null,
+                        Instant.now().plusSeconds(600), List.of(OrderItem.of(zoneId, 1, 1000)))
+                .withId(orderId).withStatus(OrderStatus.PAID);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(paid));
+
+        assertThatThrownBy(() -> orderService.payOrder(orderId, userId))
+                .isInstanceOf(ApiException.class)
+                .extracting(e -> ((ApiException) e).getErrorCode())
+                .isEqualTo(ErrorCode.ORDER_NOT_PAYABLE);
+        verify(concertSale, never()).confirmSale(any(), anyInt());
+        verify(orderRepository, never()).updateStatus(any(), any());
     }
 }

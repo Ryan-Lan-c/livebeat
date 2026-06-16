@@ -17,8 +17,8 @@ import java.util.UUID;
 /**
  * [order] 訂單 REST API 控制器
  *
- * 負責：使用者下單與查詢自身訂單
- * 對應路由：POST /api/v1/orders, GET /api/v1/orders/{id}
+ * 負責：使用者下單、查詢自身訂單、sandbox 付款
+ * 對應路由：POST /api/v1/orders, GET /api/v1/orders/{id}, POST /api/v1/orders/{id}/pay
  * 權限：USER（登入購票者）
  * 依賴：OrderService
  */
@@ -46,5 +46,14 @@ public class OrderController {
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal) {
         return orderService.getOrder(id, principal.userId());
+    }
+
+    /** Sandbox 付款：PENDING 訂單轉 PAID 並出票；非可付款狀態回 409 */
+    @PostMapping("/{id}/pay")
+    @PreAuthorize("hasRole('USER')")
+    public OrderResponse payOrder(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return orderService.payOrder(id, principal.userId());
     }
 }

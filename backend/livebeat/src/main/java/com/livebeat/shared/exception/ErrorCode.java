@@ -35,7 +35,8 @@ public enum ErrorCode {
     SESSION_SALE_NOT_OPEN("ORDER_002", "Ticket sale is not open for this session", HttpStatus.UNPROCESSABLE_ENTITY),
     EXCEEDS_MAX_PER_ORDER("ORDER_003", "Requested quantity exceeds the per-order limit", HttpStatus.UNPROCESSABLE_ENTITY),
     SEATS_SOLD_OUT("ORDER_004", "Not enough seats available", HttpStatus.CONFLICT),
-    INVENTORY_NOT_READY("ORDER_005", "Inventory is warming up or recovering, please retry", HttpStatus.SERVICE_UNAVAILABLE);
+    INVENTORY_NOT_READY("ORDER_005", "Inventory is warming up or recovering, please retry", HttpStatus.SERVICE_UNAVAILABLE),
+    ORDER_NOT_PAYABLE("ORDER_006", "Order is not payable (not pending or expired)", HttpStatus.CONFLICT);
 
     private final String code;
     private final String message;
