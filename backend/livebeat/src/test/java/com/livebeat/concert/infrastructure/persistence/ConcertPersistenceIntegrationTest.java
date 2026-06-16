@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * 涵蓋：
  *   - pg_trgm similarity() 在真實 DB 可用（搜尋 native query 的前提）。
  *   - ticket_zones 的 sold + locked <= total CHECK 約束（防超賣最後防線）。
- * 註：實際扣減/搶票流程（order 模組）尚未實作，併發扣減的端到端測試待該模組開工時補上。
+ * 註：併發扣減不超賣的端到端測試見 order 模組的 OrderConcurrencyIntegrationTest。
  */
 class ConcertPersistenceIntegrationTest extends PostgresIntegrationTest {
 

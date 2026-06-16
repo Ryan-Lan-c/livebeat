@@ -28,7 +28,14 @@ public enum ErrorCode {
     INVALID_FILE_TYPE("CONCERT_008", "Only PNG, JPEG, or WebP images are allowed", HttpStatus.BAD_REQUEST),
     STORAGE_UPLOAD_FAILED("CONCERT_009", "Failed to upload file to storage", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_SESSION_SCHEDULE("CONCERT_011", "Invalid session schedule: require saleStartAt < saleEndAt <= eventDate and a future event date", HttpStatus.UNPROCESSABLE_ENTITY),
-    ZONE_MODIFICATION_NOT_ALLOWED("CONCERT_012", "Cannot add or modify zones for a cancelled or ended session", HttpStatus.UNPROCESSABLE_ENTITY);
+    ZONE_MODIFICATION_NOT_ALLOWED("CONCERT_012", "Cannot add or modify zones for a cancelled or ended session", HttpStatus.UNPROCESSABLE_ENTITY),
+
+    // Order module
+    ORDER_NOT_FOUND("ORDER_001", "Order not found", HttpStatus.NOT_FOUND),
+    SESSION_SALE_NOT_OPEN("ORDER_002", "Ticket sale is not open for this session", HttpStatus.UNPROCESSABLE_ENTITY),
+    EXCEEDS_MAX_PER_ORDER("ORDER_003", "Requested quantity exceeds the per-order limit", HttpStatus.UNPROCESSABLE_ENTITY),
+    SEATS_SOLD_OUT("ORDER_004", "Not enough seats available", HttpStatus.CONFLICT),
+    INVENTORY_NOT_READY("ORDER_005", "Inventory is warming up or recovering, please retry", HttpStatus.SERVICE_UNAVAILABLE);
 
     private final String code;
     private final String message;
