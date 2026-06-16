@@ -6,10 +6,12 @@ import com.livebeat.concert.domain.model.*;
 import com.livebeat.concert.domain.port.*;
 import com.livebeat.shared.exception.ApiException;
 import com.livebeat.shared.exception.ErrorCode;
+import com.livebeat.concert.SessionOnSaleEvent;
 import com.livebeat.shared.security.Role;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,7 @@ public class ConcertService {
     private final ConcertSessionRepository sessionRepository;
     private final TicketZoneRepository zoneRepository;
     private final StoragePort storagePort;
+    private final ApplicationEventPublisher events;
 
     // ─── Concert（公開） ─────────────────────────────────────
 
@@ -210,6 +213,10 @@ public class ConcertService {
         validateSessionStatusTransition(session.getStatus(), newStatus);
         ConcertSession updated = session.withStatus(newStatus);
         ConcertSession saved = sessionRepository.save(updated);
+        // 開賣時通知 order 模組對票區做 Redis 庫存 warm-up（事件解耦，concert 不依賴 order）
+        if (newStatus == SessionStatus.ON_SALE) {
+            events.publishEvent(new SessionOnSaleEvent(sessionId));
+        }
         List<TicketZoneResponse> zones = zoneRepository.findBySessionId(sessionId).stream()
                 .map(TicketZoneResponse::from).toList();
         return ConcertSessionResponse.from(saved, zones);

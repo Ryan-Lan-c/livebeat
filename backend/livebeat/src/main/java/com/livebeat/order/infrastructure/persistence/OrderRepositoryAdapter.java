@@ -2,10 +2,12 @@ package com.livebeat.order.infrastructure.persistence;
 
 import com.livebeat.order.domain.model.Order;
 import com.livebeat.order.domain.model.OrderItem;
+import com.livebeat.order.domain.model.OrderStatus;
 import com.livebeat.order.domain.port.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,6 +44,26 @@ class OrderRepositoryAdapter implements OrderRepository {
     @Override
     public Optional<Order> findByIdempotencyKey(String idempotencyKey) {
         return orderJpa.findByIdempotencyKey(idempotencyKey).map(this::assemble);
+    }
+
+    @Override
+    public List<Order> findExpiredPending(Instant now) {
+        return orderJpa.findByStatusAndExpiresAtBefore(OrderStatus.PENDING, now).stream()
+                .map(this::assemble)
+                .toList();
+    }
+
+    @Override
+    public void updateStatus(UUID orderId, OrderStatus status) {
+        orderJpa.findById(orderId).ifPresent(entity -> {
+            entity.setStatus(status);
+            orderJpa.save(entity);
+        });
+    }
+
+    @Override
+    public int sumActivePendingQuantity(UUID zoneId, Instant now) {
+        return itemJpa.sumActiveQuantity(zoneId, OrderStatus.PENDING, now);
     }
 
     private Order assemble(OrderJpaEntity entity) {

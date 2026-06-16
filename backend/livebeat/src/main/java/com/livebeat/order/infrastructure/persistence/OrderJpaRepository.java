@@ -1,7 +1,10 @@
 package com.livebeat.order.infrastructure.persistence;
 
+import com.livebeat.order.domain.model.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -10,4 +13,6 @@ import java.util.UUID;
  */
 interface OrderJpaRepository extends JpaRepository<OrderJpaEntity, UUID> {
     Optional<OrderJpaEntity> findByIdempotencyKey(String idempotencyKey);
+
+    List<OrderJpaEntity> findByStatusAndExpiresAtBefore(OrderStatus status, Instant now);
 }

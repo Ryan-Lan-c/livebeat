@@ -1,6 +1,7 @@
 package com.livebeat.concert.domain.port;
 
 import com.livebeat.concert.domain.model.ConcertSession;
+import com.livebeat.concert.domain.model.SessionStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,5 +14,6 @@ public interface ConcertSessionRepository {
     ConcertSession save(ConcertSession session);
     Optional<ConcertSession> findById(UUID id);
     List<ConcertSession> findByConcertId(UUID concertId);
+    List<ConcertSession> findByStatus(SessionStatus status);
     void deleteById(UUID id);
 }

@@ -1,6 +1,7 @@
 package com.livebeat.concert.infrastructure.persistence;
 
 import com.livebeat.concert.domain.model.ConcertSession;
+import com.livebeat.concert.domain.model.SessionStatus;
 import com.livebeat.concert.domain.port.ConcertSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -44,6 +45,12 @@ class ConcertSessionRepositoryAdapter implements ConcertSessionRepository {
     @Override
     public List<ConcertSession> findByConcertId(UUID concertId) {
         return jpa.findByConcertIdOrderByEventDateAsc(concertId).stream()
+                .map(ConcertSessionJpaEntity::toDomain).toList();
+    }
+
+    @Override
+    public List<ConcertSession> findByStatus(SessionStatus status) {
+        return jpa.findByStatus(status).stream()
                 .map(ConcertSessionJpaEntity::toDomain).toList();
     }
 

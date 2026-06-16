@@ -2,6 +2,7 @@ package com.livebeat.concert.application.service;
 
 import com.livebeat.concert.ConcertQueryApi;
 import com.livebeat.concert.OrderableZone;
+import com.livebeat.concert.ZoneInventorySnapshot;
 import com.livebeat.concert.domain.model.ConcertSession;
 import com.livebeat.concert.domain.model.SessionStatus;
 import com.livebeat.concert.domain.port.ConcertSessionRepository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,6 +37,23 @@ class ConcertQueryService implements ConcertQueryApi {
                         .map(session -> new OrderableZone(
                                 zone.getId(), sessionId, zone.getPrice(),
                                 isSaleOpen(session), session.getMaxTicketsPerOrder())));
+    }
+
+    @Override
+    public List<ZoneInventorySnapshot> zonesForSession(UUID sessionId) {
+        return zoneRepository.findBySessionId(sessionId).stream()
+                .map(zone -> new ZoneInventorySnapshot(
+                        zone.getId(), zone.getSessionId(), zone.getTotalSeats(), zone.getSoldSeats()))
+                .toList();
+    }
+
+    @Override
+    public List<ZoneInventorySnapshot> onSaleZones() {
+        return sessionRepository.findByStatus(SessionStatus.ON_SALE).stream()
+                .flatMap(session -> zoneRepository.findBySessionId(session.getId()).stream())
+                .map(zone -> new ZoneInventorySnapshot(
+                        zone.getId(), zone.getSessionId(), zone.getTotalSeats(), zone.getSoldSeats()))
+                .toList();
     }
 
     /** 售票開放：場次為 ON_SALE 且當下在售票時間窗內（窗為選填）。 */

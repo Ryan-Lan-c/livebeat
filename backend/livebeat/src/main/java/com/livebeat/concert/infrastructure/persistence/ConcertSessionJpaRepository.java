@@ -1,5 +1,6 @@
 package com.livebeat.concert.infrastructure.persistence;
 
+import com.livebeat.concert.domain.model.SessionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -10,4 +11,6 @@ import java.util.UUID;
  */
 interface ConcertSessionJpaRepository extends JpaRepository<ConcertSessionJpaEntity, UUID> {
     List<ConcertSessionJpaEntity> findByConcertIdOrderByEventDateAsc(UUID concertId);
+
+    List<ConcertSessionJpaEntity> findByStatus(SessionStatus status);
 }
