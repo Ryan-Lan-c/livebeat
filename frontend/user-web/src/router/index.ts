@@ -18,6 +18,12 @@ const router = createRouter({
           name: 'concert-detail',
           component: () => import('@/views/ConcertDetailView.vue'),
         },
+        {
+          path: 'orders/:id',
+          name: 'order',
+          component: () => import('@/views/OrderView.vue'),
+          meta: { requiresAuth: true },
+        },
       ],
     },
     {

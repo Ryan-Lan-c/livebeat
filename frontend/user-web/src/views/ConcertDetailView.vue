@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { computed, ref } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useQuery } from '@tanstack/vue-query'
+import { AxiosError } from 'axios'
 import dayjs from 'dayjs'
 import { concertsApi } from '@/api/concerts'
+import { ordersApi } from '@/api/orders'
+import { useAuthStore } from '@/stores/auth'
+import { Button } from '@/components/ui/button'
+import type { ConcertSession, TicketZone } from '@/types'
 
 const { t } = useI18n()
 const route = useRoute()
+const router = useRouter()
+const auth = useAuthStore()
 const id = computed(() => String(route.params.id))
 
 const { data: concert, isLoading, isError } = useQuery({
@@ -17,6 +24,63 @@ const { data: concert, isLoading, isError } = useQuery({
 
 function formatDateTime(iso: string | null) {
   return iso ? dayjs(iso).format('YYYY-MM-DD HH:mm') : '—'
+}
+
+// 購買：就地展開數量選擇，一次只展開一個票區。
+const buyingZoneId = ref<string | null>(null)
+const qty = ref(1)
+const submitting = ref(false)
+const buyError = ref<string | null>(null)
+
+function canBuy(session: ConcertSession, zone: TicketZone) {
+  return session.status === 'ON_SALE' && zone.availableSeats > 0
+}
+
+function maxQty(session: ConcertSession, zone: TicketZone) {
+  return Math.min(session.maxTicketsPerOrder, zone.availableSeats)
+}
+
+function openBuy(zone: TicketZone) {
+  buyingZoneId.value = zone.id
+  qty.value = 1
+  buyError.value = null
+}
+
+async function confirmBuy(session: ConcertSession, zone: TicketZone) {
+  if (!auth.isAuthenticated) {
+    router.push({ name: 'login', query: { redirect: route.fullPath } })
+    return
+  }
+  submitting.value = true
+  buyError.value = null
+  try {
+    const order = await ordersApi.create({
+      sessionId: session.id,
+      zoneId: zone.id,
+      quantity: qty.value,
+      idempotencyKey: crypto.randomUUID(),
+    })
+    router.push({
+      name: 'order',
+      params: { id: order.orderId },
+      // 訂單頁第一眼即有完整摘要（OrderResponse 不含這些欄位）；重整後 history.state 仍在。
+      state: {
+        summary: JSON.stringify({
+          concertTitle: concert.value?.title ?? '',
+          sessionName: session.sessionName,
+          zoneName: zone.zoneName,
+          unitPrice: zone.price,
+          quantity: qty.value,
+        }),
+      },
+    })
+  } catch (e) {
+    const code = e instanceof AxiosError ? e.response?.data?.code : undefined
+    const key = `errors.${code}`
+    buyError.value = t(key) === key ? t('errors.default') : t(key)
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 
@@ -81,16 +145,61 @@ function formatDateTime(iso: string | null) {
             <li
               v-for="zone in session.zones"
               :key="zone.id"
-              class="flex items-center justify-between px-3 py-2 text-sm"
+              class="px-3 py-2 text-sm"
             >
-              <span class="font-medium">{{ zone.zoneName }}</span>
-              <span class="flex items-center gap-3">
-                <span>NT$ {{ zone.price.toLocaleString() }}</span>
-                <span v-if="zone.availableSeats > 0" class="text-muted-foreground">
-                  {{ t('concert.available', { count: zone.availableSeats }) }}
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-medium">{{ zone.zoneName }}</span>
+                <span class="flex items-center gap-3">
+                  <span>NT$ {{ zone.price.toLocaleString() }}</span>
+                  <span v-if="zone.availableSeats > 0" class="text-muted-foreground">
+                    {{ t('concert.available', { count: zone.availableSeats }) }}
+                  </span>
+                  <span v-else class="text-destructive">{{ t('concert.soldOut') }}</span>
+                  <Button
+                    v-if="canBuy(session, zone) && buyingZoneId !== zone.id"
+                    size="sm"
+                    @click="openBuy(zone)"
+                  >
+                    {{ t('concert.buy') }}
+                  </Button>
+                  <span
+                    v-else-if="zone.availableSeats > 0 && session.status !== 'ON_SALE'"
+                    class="text-muted-foreground"
+                  >
+                    {{ t('concert.notOnSale') }}
+                  </span>
                 </span>
-                <span v-else class="text-destructive">{{ t('concert.soldOut') }}</span>
-              </span>
+              </div>
+
+              <!-- 就地數量選擇 -->
+              <div
+                v-if="buyingZoneId === zone.id"
+                class="mt-2 flex flex-wrap items-center gap-3 rounded-md bg-muted/50 p-2"
+              >
+                <span>{{ t('concert.quantity') }}</span>
+                <div class="flex items-center gap-2">
+                  <Button variant="outline" size="sm" :disabled="qty <= 1" @click="qty--">−</Button>
+                  <span class="w-8 text-center tabular-nums">{{ qty }}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    :disabled="qty >= maxQty(session, zone)"
+                    @click="qty++"
+                  >
+                    +
+                  </Button>
+                </div>
+                <span class="text-muted-foreground">
+                  {{ t('concert.subtotal') }}：NT$ {{ (zone.price * qty).toLocaleString() }}
+                </span>
+                <Button size="sm" :disabled="submitting" @click="confirmBuy(session, zone)">
+                  {{ t('concert.confirmPurchase') }}
+                </Button>
+                <Button variant="ghost" size="sm" @click="buyingZoneId = null">
+                  {{ t('concert.cancel') }}
+                </Button>
+                <p v-if="buyError" class="w-full text-destructive">{{ buyError }}</p>
+              </div>
             </li>
           </ul>
         </div>

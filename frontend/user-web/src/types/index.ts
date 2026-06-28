@@ -110,3 +110,28 @@ export interface ApiError {
   code: string
   message: string
 }
+
+export type OrderStatus = 'PENDING' | 'PAID' | 'CANCELLED' | 'REFUNDED'
+
+/** POST /orders 請求；idempotencyKey 防連點重複下單。 */
+export interface CreateOrderRequest {
+  sessionId: string
+  zoneId: string
+  quantity: number
+  idempotencyKey?: string
+}
+
+/**
+ * 訂單回應（後端 OrderResponse）。
+ * 注意：不含 quantity 與票券明細；張數由下單頁透過 router state 帶入，
+ * 票券查詢 endpoint 尚未提供。expiresAt 在已售出（PAID）時為 null。
+ */
+export interface OrderResponse {
+  orderId: string
+  orderNo: string
+  sessionId: string
+  status: OrderStatus
+  totalAmount: number
+  currency: string
+  expiresAt: string | null
+}
